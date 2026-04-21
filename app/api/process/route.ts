@@ -5,6 +5,9 @@ import { scrapeUrl } from "@/lib/scraper";
 import { getYoutubeTranscript } from "@/lib/youtube";
 import { parsePdf } from "@/lib/pdfParser";
 
+// Increase Vercel function timeout to 60 seconds (max on hobby plan)
+export const maxDuration = 60;
+
 const FREE_LIMIT = 3;
 
 function isYoutubeUrl(url: string) {

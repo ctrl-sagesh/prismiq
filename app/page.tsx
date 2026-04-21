@@ -57,12 +57,21 @@ export default function Home() {
       const data = await res.json();
 
       if (res.status === 429) { setShowPaywall(true); return; }
-      if (!res.ok) { setError(data.error || "Something went wrong"); return; }
+      if (!res.ok) {
+        const msg = data.error || "Something went wrong";
+        if (msg.includes("transcript") || msg.includes("No transcript")) {
+          setError("⚠️ This video has no captions/transcript. Try an educational video, tutorial, or lecture — those always have transcripts.");
+        } else {
+          setError(msg);
+        }
+        return;
+      }
 
       setResult(data.result);
       setScansLeft(data.scansLeft);
-    } catch {
-      setError("Network error. Please try again.");
+    } catch (err) {
+      console.error(err);
+      setError("Request timed out or failed. Try a shorter video or a different URL.");
     } finally {
       setLoading(false);
     }

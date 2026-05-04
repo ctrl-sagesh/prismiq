@@ -6,8 +6,8 @@ import "./globals.css";
 const geist = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Prismiq — Understand Anything Instantly",
-  description: "Upload any link, PDF, image, or YouTube video and get instant summaries, notes, and Q&A powered by AI.",
+  title: "Prismiq | Understand Anything Instantly",
+  description: "Paste any YouTube link, website, PDF or image. Get instant summaries, study notes, Q&A and more powered by AI.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

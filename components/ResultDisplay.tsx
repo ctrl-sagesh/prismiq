@@ -5,10 +5,10 @@ import { useState } from "react";
 export default function ResultDisplay({ result, action }: { result: string; action: string }) {
   const [copied, setCopied] = useState(false);
 
-  const actionLabels: Record<string, string> = {
+  const labels: Record<string, string> = {
     summarize: "Summary",
     notes: "Study Notes",
-    qa: "Q&A",
+    qa: "Questions & Answers",
     search: "Search Results",
   };
 
@@ -28,45 +28,88 @@ export default function ResultDisplay({ result, action }: { result: string; acti
     URL.revokeObjectURL(url);
   };
 
-  const lines = result.split("\n");
+  const renderLine = (line: string, i: number) => {
+    // H1 heading
+    if (line.startsWith("# ")) return <h1 key={i} className="text-xl font-bold text-white mt-5 mb-2 first:mt-0">{line.slice(2)}</h1>;
+    // H2 heading
+    if (line.startsWith("## ")) return <h2 key={i} className="text-base font-semibold text-violet-300 mt-5 mb-2 first:mt-0">{line.slice(3)}</h2>;
+    // H3 heading
+    if (line.startsWith("### ")) return <h3 key={i} className="text-sm font-semibold text-purple-300 mt-4 mb-1">{line.slice(4)}</h3>;
+    // Divider
+    if (line.trim() === "---") return <hr key={i} className="border-white/10 my-4" />;
+    // Q&A question line
+    if (line.startsWith("Q:")) return <p key={i} className="font-semibold text-violet-200 mt-5 text-sm">{line}</p>;
+    // Q&A answer line
+    if (line.startsWith("A:")) return <p key={i} className="text-white/70 text-sm leading-relaxed mt-1 ml-4">{line}</p>;
+    // Bullet point
+    if (line.startsWith("- ") || line.startsWith("* ")) {
+      const text = line.slice(2).replace(/\*\*(.*?)\*\*/g, "$1");
+      return (
+        <div key={i} className="flex gap-2.5 text-sm text-white/70 leading-relaxed">
+          <span className="text-violet-400 mt-1 shrink-0">·</span>
+          <span>{text}</span>
+        </div>
+      );
+    }
+    // Numbered list
+    if (/^\d+\.\s/.test(line)) {
+      const text = line.replace(/^\d+\.\s/, "").replace(/\*\*(.*?)\*\*/g, "$1");
+      const num = line.match(/^(\d+)\./)?.[1];
+      return (
+        <div key={i} className="flex gap-2.5 text-sm text-white/70 leading-relaxed">
+          <span className="text-violet-400 shrink-0 font-medium">{num}.</span>
+          <span>{text}</span>
+        </div>
+      );
+    }
+    // Empty line
+    if (line.trim() === "") return <div key={i} className="h-2" />;
+    // Table row
+    if (line.startsWith("|")) {
+      const cells = line.split("|").filter(c => c.trim() !== "");
+      const isSeparator = cells.every(c => /^[-:\s]+$/.test(c));
+      if (isSeparator) return null;
+      return (
+        <div key={i} className="grid text-sm" style={{ gridTemplateColumns: `repeat(${cells.length}, 1fr)` }}>
+          {cells.map((cell, j) => (
+            <span key={j} className={`px-3 py-1.5 border-b border-white/10 text-white/70 ${j === 0 ? "font-medium text-white/90" : ""}`}>
+              {cell.trim().replace(/\*\*(.*?)\*\*/g, "$1")}
+            </span>
+          ))}
+        </div>
+      );
+    }
+    // Normal paragraph
+    const cleaned = line.replace(/\*\*(.*?)\*\*/g, "$1").replace(/\*(.*?)\*/g, "$1");
+    return <p key={i} className="text-sm text-white/70 leading-relaxed">{cleaned}</p>;
+  };
 
   return (
-    <div className="w-full max-w-3xl mx-auto">
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold text-white">
-          {actionLabels[action] || "Result"}
-        </h2>
+    <div className="w-full">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-green-400" />
+          <h2 className="text-sm font-semibold text-white">{labels[action] || "Result"}</h2>
+        </div>
         <div className="flex gap-2">
-          <button
-            onClick={handleCopy}
-            className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-xs text-white/70 hover:text-white hover:bg-white/10 transition-all"
-          >
-            {copied ? "Copied!" : "Copy"}
+          <button onClick={handleCopy}
+            className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-xs text-white/50 hover:text-white hover:bg-white/10 transition-all">
+            {copied ? "✓ Copied" : "Copy"}
           </button>
-          <button
-            onClick={handleDownload}
-            className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-xs text-white/70 hover:text-white hover:bg-white/10 transition-all"
-          >
-            Download .md
+          <button onClick={handleDownload}
+            className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-xs text-white/50 hover:text-white hover:bg-white/10 transition-all">
+            Download
           </button>
         </div>
       </div>
 
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-6 space-y-2 max-h-[600px] overflow-y-auto">
-        {lines.map((line, i) => {
-          if (line.startsWith("## ")) return <h2 key={i} className="text-lg font-bold text-violet-300 mt-4 first:mt-0">{line.slice(3)}</h2>;
-          if (line.startsWith("### ")) return <h3 key={i} className="text-base font-semibold text-purple-300 mt-3">{line.slice(4)}</h3>;
-          if (line.startsWith("**Q")) return <p key={i} className="font-semibold text-violet-200 mt-4">{line.replace(/\*\*/g, "")}</p>;
-          if (line.startsWith("- ") || line.startsWith("* ")) return (
-            <div key={i} className="flex gap-2 text-sm text-white/80">
-              <span className="text-violet-400 mt-0.5">•</span>
-              <span>{line.slice(2).replace(/\*\*(.*?)\*\*/g, "$1")}</span>
-            </div>
-          );
-          if (line.trim() === "") return <div key={i} className="h-1" />;
-          return <p key={i} className="text-sm text-white/80 leading-relaxed">{line.replace(/\*\*(.*?)\*\*/g, "$1")}</p>;
-        })}
+      {/* Content */}
+      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 space-y-1.5 max-h-[620px] overflow-y-auto">
+        {result.split("\n").map((line, i) => renderLine(line, i))}
       </div>
+
+      <p className="text-xs text-white/20 text-center mt-3">Generated by Prismiq · prismiq-7pv9.vercel.app</p>
     </div>
   );
 }

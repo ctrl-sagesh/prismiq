@@ -3,6 +3,12 @@
 import { signIn } from "next-auth/react";
 import Link from "next/link";
 
+const CHECKOUT = {
+  starter: "https://prismiq.lemonsqueezy.com/checkout/buy/4ab47c49-588f-4cff-8751-744d0097764e",
+  pro: "https://prismiq.lemonsqueezy.com/checkout/buy/4c620875-f1a5-4b0d-a61c-f0f6c1a51c77",
+  unlimited: "https://prismiq.lemonsqueezy.com/checkout/buy/c9a3a007-85d6-4bff-ae0d-fb0fa6406778",
+};
+
 type ModalType = "signin_required" | "upgrade_required";
 
 export default function PaywallModal({ type, onClose }: { type: ModalType; onClose: () => void }) {
@@ -58,9 +64,9 @@ export default function PaywallModal({ type, onClose }: { type: ModalType; onClo
                 <p key={f} className="text-xs text-white/50 flex gap-1.5"><span className="text-violet-400">✓</span>{f}</p>
               ))}
             </div>
-            <Link href="/upgrade" onClick={onClose} className="block w-full py-2 rounded-lg border border-white/20 text-white/70 text-xs hover:bg-white/5 transition-colors">
+            <a href={CHECKOUT.starter} target="_blank" rel="noopener noreferrer" className="block w-full py-2 rounded-lg border border-white/20 text-white/70 text-xs hover:bg-white/5 transition-colors">
               Get Starter
-            </Link>
+            </a>
           </div>
 
           {/* Pro - highlighted */}
@@ -69,31 +75,31 @@ export default function PaywallModal({ type, onClose }: { type: ModalType; onClo
               POPULAR
             </div>
             <p className="text-violet-300 text-xs font-medium mb-1">Pro</p>
-            <p className="text-2xl font-bold text-white">$8<span className="text-sm font-normal text-white/40">/mo</span></p>
+            <p className="text-2xl font-bold text-white">$8.99<span className="text-sm font-normal text-white/40">/mo</span></p>
             <p className="text-violet-300 text-xs mt-1 mb-3">100 scans/month</p>
             <div className="space-y-1.5 text-left mb-4">
               {["Everything in Starter", "Priority processing", "Longer documents", "Early new features"].map(f => (
                 <p key={f} className="text-xs text-violet-200 flex gap-1.5"><span className="text-violet-400">✓</span>{f}</p>
               ))}
             </div>
-            <Link href="/upgrade" onClick={onClose} className="block w-full py-2 rounded-lg bg-gradient-to-r from-violet-600 to-pink-600 text-white text-xs font-semibold hover:opacity-90 transition-opacity">
+            <a href={CHECKOUT.pro} target="_blank" rel="noopener noreferrer" className="block w-full py-2 rounded-lg bg-gradient-to-r from-violet-600 to-pink-600 text-white text-xs font-semibold hover:opacity-90 transition-opacity">
               Get Pro
-            </Link>
+            </a>
           </div>
 
           {/* Unlimited */}
           <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-center">
             <p className="text-white/60 text-xs font-medium mb-1">Unlimited</p>
-            <p className="text-2xl font-bold text-white">$15<span className="text-sm font-normal text-white/40">/mo</span></p>
+            <p className="text-2xl font-bold text-white">$15.99<span className="text-sm font-normal text-white/40">/mo</span></p>
             <p className="text-violet-300 text-xs mt-1 mb-3">Unlimited scans</p>
             <div className="space-y-1.5 text-left mb-4">
               {["Everything in Pro", "Unlimited scans", "Bulk processing", "Priority support"].map(f => (
                 <p key={f} className="text-xs text-white/50 flex gap-1.5"><span className="text-violet-400">✓</span>{f}</p>
               ))}
             </div>
-            <Link href="/upgrade" onClick={onClose} className="block w-full py-2 rounded-lg border border-white/20 text-white/70 text-xs hover:bg-white/5 transition-colors">
+            <a href={CHECKOUT.unlimited} target="_blank" rel="noopener noreferrer" className="block w-full py-2 rounded-lg border border-white/20 text-white/70 text-xs hover:bg-white/5 transition-colors">
               Get Unlimited
-            </Link>
+            </a>
           </div>
         </div>
 

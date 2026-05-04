@@ -1,35 +1,44 @@
 import Navbar from "@/components/Navbar";
 import Link from "next/link";
 
+const CHECKOUT = {
+  starter: "https://prismiq.lemonsqueezy.com/checkout/buy/4ab47c49-588f-4cff-8751-744d0097764e",
+  pro: "https://prismiq.lemonsqueezy.com/checkout/buy/4c620875-f1a5-4b0d-a61c-f0f6c1a51c77",
+  unlimited: "https://prismiq.lemonsqueezy.com/checkout/buy/c9a3a007-85d6-4bff-ae0d-fb0fa6406778",
+};
+
 const plans = [
   {
     name: "Starter",
-    price: "$3",
+    price: "$3.99",
     period: "/month",
     tagline: "Perfect for occasional use",
     scans: "25 scans / month",
     features: ["All input types (links, PDFs, images)", "Summarize & Key Notes", "Q&A generation", "Search inside content", "Download as Markdown"],
     cta: "Get Starter",
+    href: CHECKOUT.starter,
     highlight: false,
   },
   {
     name: "Pro",
-    price: "$8",
+    price: "$8.99",
     period: "/month",
     tagline: "Best for students & researchers",
     scans: "100 scans / month",
     features: ["Everything in Starter", "Priority AI processing", "Longer documents & videos", "Early access to new features", "Email support"],
     cta: "Get Pro",
+    href: CHECKOUT.pro,
     highlight: true,
   },
   {
     name: "Unlimited",
-    price: "$15",
+    price: "$15.99",
     period: "/month",
     tagline: "For power users & teams",
     scans: "Unlimited scans",
     features: ["Everything in Pro", "Truly unlimited scans", "Bulk content processing", "Highest priority processing", "Priority support"],
     cta: "Get Unlimited",
+    href: CHECKOUT.unlimited,
     highlight: false,
   },
 ];
@@ -88,9 +97,10 @@ export default function UpgradePage() {
                 ))}
               </div>
 
-              <button className={`w-full py-2.5 rounded-xl text-sm font-semibold transition-opacity ${plan.highlight ? "bg-gradient-to-r from-violet-600 to-pink-600 text-white hover:opacity-90" : "border border-white/20 text-white/60 hover:bg-white/5"}`}>
-                {plan.cta} — Coming Soon
-              </button>
+              <a href={plan.href} target="_blank" rel="noopener noreferrer"
+                className={`block w-full py-2.5 rounded-xl text-sm font-semibold text-center transition-opacity ${plan.highlight ? "bg-gradient-to-r from-violet-600 to-pink-600 text-white hover:opacity-90" : "border border-white/20 text-white/60 hover:bg-white/5"}`}>
+                {plan.cta}
+              </a>
             </div>
           ))}
         </div>

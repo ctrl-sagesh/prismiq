@@ -98,7 +98,7 @@ export default function Home() {
         {/* Hero */}
         <div className="text-center mb-10 max-w-2xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-violet-500/30 bg-violet-500/10 text-violet-300 text-xs mb-6 font-medium">
-            ✨ Free to try — no account needed
+            ✨ Free to try. No account needed.
           </div>
           <h1 className="text-5xl sm:text-6xl font-bold text-white mb-5 leading-[1.1] tracking-tight">
             Stop scrolling.<br />
@@ -107,7 +107,7 @@ export default function Home() {
             </span>
           </h1>
           <p className="text-white/50 text-lg leading-relaxed max-w-lg mx-auto">
-            Paste any YouTube video, website, PDF or image. Get a clear summary, study notes, Q&A — in seconds.
+            Paste any YouTube video, website, PDF or image and get a clear summary, study notes or Q&A in seconds.
           </p>
         </div>
 

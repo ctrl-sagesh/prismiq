@@ -22,6 +22,10 @@ export default function Navbar() {
       <div className="flex items-center gap-3">
         <Link href="/upgrade" className="text-sm text-white/60 hover:text-white transition-colors">Pricing</Link>
 
+        <Link href="/upgrade" className="px-4 py-2 rounded-full bg-gradient-to-r from-violet-600 to-pink-600 text-sm font-semibold text-white hover:opacity-90 transition-opacity">
+          Upgrade
+        </Link>
+
         {session?.user ? (
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
@@ -35,14 +39,9 @@ export default function Navbar() {
             </button>
           </div>
         ) : (
-          <>
-            <button onClick={() => signIn("google")} className="text-sm text-white/60 hover:text-white transition-colors">
-              Sign in
-            </button>
-            <Link href="/upgrade" className="px-4 py-2 rounded-full bg-gradient-to-r from-violet-600 to-pink-600 text-sm font-semibold text-white hover:opacity-90 transition-opacity">
-              Upgrade
-            </Link>
-          </>
+          <button onClick={() => signIn("google")} className="text-sm text-white/60 hover:text-white transition-colors">
+            Sign in
+          </button>
         )}
       </div>
     </nav>

@@ -112,7 +112,7 @@ export default function UpgradePage() {
             { q: "Do I need a card for the free plan?", a: "No. 2 free scans require nothing. Sign in with Google for 2 more — still no card." },
             { q: "Can I cancel anytime?", a: "Yes, cancel with one click. No questions asked, no hidden fees." },
             { q: "What counts as one scan?", a: "Each time you process a link, video, file, or image counts as one scan." },
-            { q: "When will payments be available?", a: "Stripe payments are coming very soon. Join early to get notified." },
+            { q: "What payment methods are accepted?", a: "We accept all major cards, PayPal, and more via our secure checkout." },
           ].map((faq) => (
             <div key={faq.q} className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
               <p className="text-white/80 text-sm font-medium mb-1">{faq.q}</p>
@@ -123,7 +123,7 @@ export default function UpgradePage() {
 
         <p className="mt-10 text-white/30 text-xs text-center">
           Questions? Contact us at{" "}
-          <a href="mailto:hello@prismiq.app" className="text-violet-400 hover:underline">hello@prismiq.app</a>
+          <a href="mailto:sageshadhikari@gmail.com" className="text-violet-400 hover:underline">sageshadhikari@gmail.com</a>
         </p>
       </main>
     </>

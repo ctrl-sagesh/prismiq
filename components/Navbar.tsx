@@ -10,8 +10,13 @@ export default function Navbar() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 border-b border-white/10 bg-[#07070f]/80 backdrop-blur-md">
       <Link href="/" className="flex items-center gap-2">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center text-white font-bold text-sm">P</div>
-        <span className="font-bold text-lg text-white">Prismiq</span>
+        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 via-fuchsia-500 to-pink-500 flex items-center justify-center shadow-lg shadow-violet-500/30 ring-1 ring-white/10">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 2.5H9C10.933 2.5 12.5 4.067 12.5 6C12.5 7.933 10.933 9.5 9 9.5H3V2.5Z" fill="white" fillOpacity="0.95"/>
+            <path d="M3 9.5V13.5" stroke="white" strokeWidth="2.2" strokeLinecap="round"/>
+          </svg>
+        </div>
+        <span className="font-bold text-lg text-white tracking-tight">Prismiq</span>
       </Link>
 
       <div className="flex items-center gap-3">

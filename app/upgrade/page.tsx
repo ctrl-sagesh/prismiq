@@ -123,7 +123,7 @@ export default function UpgradePage() {
 
         <p className="mt-10 text-white/30 text-xs text-center">
           Questions? Contact us at{" "}
-          <a href="mailto:sageshadhikari@gmail.com" className="text-violet-400 hover:underline">sageshadhikari@gmail.com</a>
+          <a href="mailto:shopatmine01@gmail.com" className="text-violet-400 hover:underline">shopatmine01@gmail.com</a>
         </p>
       </main>
     </>

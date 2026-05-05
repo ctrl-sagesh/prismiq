@@ -38,6 +38,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [modal, setModal] = useState<ModalType>(null);
   const [scansLeft, setScansLeft] = useState<number | null>(null);
+  const [resetAt, setResetAt] = useState<string | undefined>(undefined);
   const [dragging, setDragging] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -70,6 +71,7 @@ export default function Home() {
       const data = await res.json();
 
       if (res.status === 429) {
+        if (data.resetAt) setResetAt(data.resetAt);
         setModal(data.error === "signin_required" ? "signin_required" : "upgrade_required");
         return;
       }
@@ -93,7 +95,7 @@ export default function Home() {
   return (
     <>
       <Navbar />
-      {modal && <PaywallModal type={modal} onClose={() => setModal(null)} />}
+      {modal && <PaywallModal type={modal} onClose={() => setModal(null)} resetAt={resetAt} />}
 
       {/* Background glow orbs — radial-gradient so edges naturally fade to transparent */}
       <div className="fixed inset-0 pointer-events-none z-0">

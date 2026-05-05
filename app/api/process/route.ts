@@ -22,9 +22,9 @@ export async function POST(req: NextRequest) {
 
   if (session?.user?.email) {
     // Signed-in user: check DB scan limit
-    const { allowed, scansLeft } = await checkUserCanScan(session.user.email);
+    const { allowed, scansLeft, resetAt } = await checkUserCanScan(session.user.email);
     if (!allowed) {
-      return NextResponse.json({ error: "upgrade_required" }, { status: 429 });
+      return NextResponse.json({ error: "upgrade_required", resetAt }, { status: 429 });
     }
 
     try {

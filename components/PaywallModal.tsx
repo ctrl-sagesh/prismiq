@@ -1,6 +1,7 @@
 'use client';
 
 import { signIn } from "next-auth/react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 
 const CHECKOUT = {
@@ -11,7 +12,45 @@ const CHECKOUT = {
 
 type ModalType = "signin_required" | "upgrade_required";
 
-export default function PaywallModal({ type, onClose }: { type: ModalType; onClose: () => void }) {
+function useCountdown(resetAt?: string) {
+  const [timeLeft, setTimeLeft] = useState("");
+
+  useEffect(() => {
+    if (!resetAt) return;
+
+    function tick() {
+      const diff = new Date(resetAt!).getTime() - Date.now();
+      if (diff <= 0) {
+        setTimeLeft("00:00:00");
+        return;
+      }
+      const h = Math.floor(diff / (1000 * 60 * 60));
+      const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const s = Math.floor((diff % (1000 * 60)) / 1000);
+      setTimeLeft(
+        `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`
+      );
+    }
+
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [resetAt]);
+
+  return timeLeft;
+}
+
+export default function PaywallModal({
+  type,
+  onClose,
+  resetAt,
+}: {
+  type: ModalType;
+  onClose: () => void;
+  resetAt?: string;
+}) {
+  const timeLeft = useCountdown(resetAt);
+
   if (type === "signin_required") {
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
@@ -47,10 +86,21 @@ export default function PaywallModal({ type, onClose }: { type: ModalType; onClo
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
       <div className="w-full max-w-lg rounded-2xl border border-white/10 bg-[#0e0e1a] p-7 shadow-2xl">
-        <div className="text-center mb-6">
+        <div className="text-center mb-5">
           <div className="mx-auto mb-3 w-12 h-12 rounded-full bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center text-xl">⚡</div>
           <h2 className="text-xl font-bold text-white mb-1">You have used all your free scans</h2>
-          <p className="text-white/50 text-sm">Choose a plan to keep going</p>
+          <p className="text-white/50 text-sm">Upgrade to keep going, or wait for your free scans to reset.</p>
+
+          {/* 24-hour countdown */}
+          {timeLeft && (
+            <div className="mt-4 inline-flex flex-col items-center gap-1 px-5 py-3 rounded-2xl border border-violet-500/20 bg-violet-500/8">
+              <p className="text-white/40 text-xs font-medium uppercase tracking-wider">Free scans reset in</p>
+              <p className="text-3xl font-bold tabular-nums" style={{ background: "linear-gradient(to right, #a78bfa, #f472b6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                {timeLeft}
+              </p>
+              <p className="text-white/25 text-[10px]">hr : min : sec</p>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-3 gap-3 mb-5">

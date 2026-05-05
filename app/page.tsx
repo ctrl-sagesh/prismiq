@@ -24,7 +24,7 @@ const steps = [
 ];
 
 const works = ["YouTube tutorials and lectures", "Any website or article", "PDF documents", "Screenshots and images", "Text files and notes"];
-const doesnt = ["Movies and TV clips", "Music videos", "Private or unlisted videos", "Videos with no subtitles"];
+const doesnt = ["Movies and TV clips", "Music videos", "Private or deleted videos", "Age-restricted videos"];
 
 export default function Home() {
   const [inputType, setInputType] = useState<InputType>("url");

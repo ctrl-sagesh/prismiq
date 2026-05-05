@@ -50,9 +50,9 @@ export default function ResultDisplay({ result, action }: { result: string; acti
     // Divider
     if (line.trim() === "---") return <hr key={i} className="border-white/10 my-4" />;
     // Q&A question line
-    if (line.startsWith("Q:")) return <p key={i} className="font-semibold text-violet-200 mt-5 text-sm">{line}</p>;
+    if (line.startsWith("Q:")) return <p key={i} className="font-semibold text-violet-200 mt-5 text-sm">{renderInline(line)}</p>;
     // Q&A answer line
-    if (line.startsWith("A:")) return <p key={i} className="text-white/70 text-sm leading-relaxed mt-1 ml-4">{line}</p>;
+    if (line.startsWith("A:")) return <p key={i} className="text-white/70 text-sm leading-relaxed mt-1 ml-4">{renderInline(line)}</p>;
     // Bullet point
     if (line.startsWith("- ") || line.startsWith("* ")) {
       return (
@@ -84,7 +84,7 @@ export default function ResultDisplay({ result, action }: { result: string; acti
         <div key={i} className="grid text-sm" style={{ gridTemplateColumns: `repeat(${cells.length}, 1fr)` }}>
           {cells.map((cell, j) => (
             <span key={j} className={`px-3 py-1.5 border-b border-white/10 text-white/70 ${j === 0 ? "font-medium text-white/90" : ""}`}>
-              {cell.trim().replace(/\*\*(.*?)\*\*/g, "$1")}
+              {renderInline(cell.trim())}
             </span>
           ))}
         </div>

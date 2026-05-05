@@ -44,3 +44,5 @@ client_secret_*.json
 *oauth*.json
 *credentials*.json
 Oauth*.png
+*.txt
+!README.txt

@@ -95,11 +95,11 @@ export default function Home() {
       <Navbar />
       {modal && <PaywallModal type={modal} onClose={() => setModal(null)} />}
 
-      {/* Background glow orbs */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-[-15%] left-[-8%] w-[480px] h-[480px] rounded-full bg-violet-600/20 blur-[130px]" />
-        <div className="absolute top-[5%] right-[-10%] w-[380px] h-[380px] rounded-full bg-pink-600/15 blur-[110px]" />
-        <div className="absolute bottom-[15%] left-[35%] w-[320px] h-[320px] rounded-full bg-fuchsia-700/10 blur-[90px]" />
+      {/* Background glow orbs — radial-gradient so edges naturally fade to transparent */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-0 left-0 w-[600px] h-[600px]" style={{ background: "radial-gradient(circle at 30% 30%, rgba(139,92,246,0.18) 0%, transparent 70%)" }} />
+        <div className="absolute top-0 right-0 w-[500px] h-[500px]" style={{ background: "radial-gradient(circle at 70% 20%, rgba(236,72,153,0.12) 0%, transparent 70%)" }} />
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[400px] h-[400px]" style={{ background: "radial-gradient(circle at 50% 80%, rgba(192,38,211,0.08) 0%, transparent 70%)" }} />
       </div>
 
       <main className="relative z-10 flex flex-col items-center px-4 pt-24 pb-20 min-h-screen">

@@ -60,24 +60,31 @@ async function fetchWatchPage(videoId: string): Promise<string> {
   return res.text();
 }
 
-function extractJson(html: string, marker: string): Record<string, unknown> | null {
-  const idx = html.indexOf(marker);
-  if (idx === -1) return null;
-  const start = idx + marker.length;
-  let depth = 0, end = start;
-  for (let i = start; i < html.length; i++) {
-    if (html[i] === "{") depth++;
-    else if (html[i] === "}") {
-      depth--;
-      if (depth === 0) { end = i + 1; break; }
+function extractJson(html: string, ...markers: string[]): Record<string, unknown> | null {
+  for (const marker of markers) {
+    const idx = html.indexOf(marker);
+    if (idx === -1) continue;
+    const start = idx + marker.length;
+    // Skip to the first { in case there are spaces or = signs
+    let jsonStart = start;
+    while (jsonStart < html.length && html[jsonStart] !== "{") jsonStart++;
+    if (jsonStart >= html.length) continue;
+    let depth = 0, end = jsonStart;
+    for (let i = jsonStart; i < html.length; i++) {
+      if (html[i] === "{") depth++;
+      else if (html[i] === "}") {
+        depth--;
+        if (depth === 0) { end = i + 1; break; }
+      }
+    }
+    if (end <= jsonStart) continue;
+    try {
+      return JSON.parse(html.slice(jsonStart, end)) as Record<string, unknown>;
+    } catch {
+      continue;
     }
   }
-  if (end <= start) return null;
-  try {
-    return JSON.parse(html.slice(start, end)) as Record<string, unknown>;
-  } catch {
-    return null;
-  }
+  return null;
 }
 
 function parseCaptionXml(xml: string): string {
@@ -120,8 +127,22 @@ export async function getYoutubeTranscript(url: string): Promise<string> {
 
   const html = await fetchWatchPage(videoId);
 
-  const playerResponse = extractJson(html, "ytInitialPlayerResponse = ") as PlayerResponse | null;
-  const initialData = extractJson(html, "var ytInitialData = ");
+  // Try multiple marker formats YouTube uses across different server responses
+  const playerResponse = extractJson(
+    html,
+    "ytInitialPlayerResponse = ",
+    "ytInitialPlayerResponse=",
+    "var ytInitialPlayerResponse = ",
+    "var ytInitialPlayerResponse="
+  ) as PlayerResponse | null;
+
+  const initialData = extractJson(
+    html,
+    "var ytInitialData = ",
+    "ytInitialData = ",
+    "var ytInitialData=",
+    "ytInitialData="
+  );
 
   if (!playerResponse) {
     throw new Error("Could not parse YouTube page. Try a different video.");
@@ -172,9 +193,10 @@ export async function getYoutubeTranscript(url: string): Promise<string> {
   // ── Fallback: title + description + chapters ──────────────────────────────
   // YouTube blocks server-side timedtext access from cloud IPs, so we use
   // the video's description and chapter list as content for AI to work with.
-  if (!description || description.length < 30) {
+  // We only fail if we couldn't get even the title.
+  if (!title || title === "Unknown title") {
     throw new Error(
-      "No captions or description found for this video. Try a video with subtitles or a detailed description."
+      "Could not read this video. It may be private, age-restricted, or unavailable."
     );
   }
 

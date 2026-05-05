@@ -49,10 +49,10 @@ export default function UpgradePage() {
       <Navbar />
 
       {/* Background glow orbs */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-[-10%] left-[-5%] w-[420px] h-[420px] rounded-full bg-violet-600/15 blur-[120px]" />
-        <div className="absolute top-[20%] right-[-8%] w-[350px] h-[350px] rounded-full bg-pink-600/12 blur-[100px]" />
-        <div className="absolute bottom-[10%] left-[40%] w-[280px] h-[280px] rounded-full bg-fuchsia-700/8 blur-[80px]" />
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-0 left-0 w-[550px] h-[550px]" style={{ background: "radial-gradient(circle at 20% 20%, rgba(139,92,246,0.15) 0%, transparent 70%)" }} />
+        <div className="absolute top-0 right-0 w-[450px] h-[450px]" style={{ background: "radial-gradient(circle at 80% 15%, rgba(236,72,153,0.10) 0%, transparent 70%)" }} />
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[380px] h-[380px]" style={{ background: "radial-gradient(circle at 50% 85%, rgba(192,38,211,0.07) 0%, transparent 70%)" }} />
       </div>
 
       <main className="relative z-10 flex flex-col items-center px-4 pt-28 pb-20 min-h-screen">

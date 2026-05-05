@@ -20,19 +20,9 @@ function decodeHtmlEntities(text: string): string {
     .replace(/&apos;/g, "'");
 }
 
-// Extract video info from HTML meta tags — always present, even when JSON parsing fails
-function extractMetaTags(html: string): { title: string; description: string } {
-  const titleMatch =
-    html.match(/<title>([^<]+)<\/title>/) ||
-    html.match(/<meta name="title" content="([^"]+)"/) ||
-    html.match(/<meta property="og:title" content="([^"]+)"/);
-  const descMatch =
-    html.match(/<meta name="description" content="([^"]+)"/) ||
-    html.match(/<meta property="og:description" content="([^"]+)"/);
-
-  let title = decodeHtmlEntities((titleMatch?.[1] ?? "").replace(/ - YouTube$/, "").trim());
-  const description = decodeHtmlEntities(descMatch?.[1] ?? "");
-  return { title, description };
+interface OEmbedResponse {
+  title?: string;
+  author_name?: string;
 }
 
 interface CaptionTrack {
@@ -54,25 +44,43 @@ interface PlayerResponse {
   };
 }
 
-// Fetch YouTube watch page with consent cookies to bypass GDPR modal
+// YouTube's official public oEmbed API — works from any IP, no auth needed.
+// Returns title + author reliably even when watch page scraping fails.
+async function fetchOEmbed(videoId: string): Promise<OEmbedResponse> {
+  try {
+    const res = await fetch(
+      `https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${videoId}&format=json`
+    );
+    if (!res.ok) return {};
+    return res.json() as Promise<OEmbedResponse>;
+  } catch {
+    return {};
+  }
+}
+
+// Fetch watch page with consent cookies — used to get description + captions.
+// May fail or return minimal content from Vercel IPs; always used as best-effort.
 async function fetchWatchPage(videoId: string): Promise<string> {
-  const res = await fetch(
-    `https://www.youtube.com/watch?v=${videoId}&hl=en`,
-    {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-        "Accept-Language": "en-US,en;q=0.9",
-        Accept:
-          "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-        Cookie:
-          "CONSENT=YES+cb.20210328-17-p0.en+FX+294; SOCS=CAESEwgDEgk4OTI4NDM3NDEYASAB",
-        "Cache-Control": "no-cache",
-      },
-    }
-  );
-  if (!res.ok) throw new Error(`YouTube returned HTTP ${res.status}`);
-  return res.text();
+  try {
+    const res = await fetch(
+      `https://www.youtube.com/watch?v=${videoId}&hl=en`,
+      {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+          "Accept-Language": "en-US,en;q=0.9",
+          Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+          Cookie:
+            "CONSENT=YES+cb.20210328-17-p0.en+FX+294; SOCS=CAESEwgDEgk4OTI4NDM3NDEYASAB",
+          "Cache-Control": "no-cache",
+        },
+      }
+    );
+    if (!res.ok) return "";
+    return res.text();
+  } catch {
+    return "";
+  }
 }
 
 function extractJson(html: string, ...markers: string[]): Record<string, unknown> | null {
@@ -80,7 +88,6 @@ function extractJson(html: string, ...markers: string[]): Record<string, unknown
     const idx = html.indexOf(marker);
     if (idx === -1) continue;
     const start = idx + marker.length;
-    // Skip to the first { in case there are spaces or = signs
     let jsonStart = start;
     while (jsonStart < html.length && html[jsonStart] !== "{") jsonStart++;
     if (jsonStart >= html.length) continue;
@@ -102,6 +109,42 @@ function extractJson(html: string, ...markers: string[]): Record<string, unknown
   return null;
 }
 
+function extractDescriptionFromHtml(html: string): string {
+  if (!html) return "";
+
+  // Try JSON player response first
+  const playerResponse = extractJson(
+    html,
+    "ytInitialPlayerResponse = ",
+    "ytInitialPlayerResponse=",
+    "var ytInitialPlayerResponse = ",
+    "var ytInitialPlayerResponse="
+  ) as PlayerResponse | null;
+
+  if (playerResponse?.videoDetails?.shortDescription) {
+    return playerResponse.videoDetails.shortDescription;
+  }
+
+  // Fall back to meta description tag
+  const metaMatch =
+    html.match(/<meta name="description" content="([^"]+)"/) ||
+    html.match(/<meta property="og:description" content="([^"]+)"/);
+  return decodeHtmlEntities(metaMatch?.[1] ?? "");
+}
+
+function extractDurationFromHtml(html: string): string {
+  if (!html) return "";
+  const playerResponse = extractJson(
+    html,
+    "ytInitialPlayerResponse = ",
+    "ytInitialPlayerResponse=",
+    "var ytInitialPlayerResponse = "
+  ) as PlayerResponse | null;
+  const secs = parseInt(playerResponse?.videoDetails?.lengthSeconds ?? "0", 10);
+  if (!secs) return "";
+  return `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, "0")}`;
+}
+
 function parseCaptionXml(xml: string): string {
   const tags = xml.match(/<text[^>]*>([\s\S]*?)<\/text>/g);
   if (!tags || tags.length === 0) return "";
@@ -117,117 +160,77 @@ function parseCaptionXml(xml: string): string {
     .trim();
 }
 
-// Extract chapters from ytInitialData (they live in the video description engagementPanels)
-function extractChapters(initialData: Record<string, unknown>): string {
-  try {
-    const str = JSON.stringify(initialData);
-    // Chapters appear in macroMarkersListItemRenderer
-    const matches = str.match(/"title":\{"simpleText":"([^"]+)"\},"timeDescriptionText":\{"simpleText":"(\d+:\d+)"\}/g);
-    if (!matches || matches.length === 0) return "";
-    return matches
-      .map((m) => {
-        const title = m.match(/"title":\{"simpleText":"([^"]+)"\}/)?.[1] || "";
-        const time = m.match(/"timeDescriptionText":\{"simpleText":"([^"]+)"\}/)?.[1] || "";
-        return `${time} — ${title}`;
-      })
-      .join("\n");
-  } catch {
-    return "";
-  }
-}
-
 export async function getYoutubeTranscript(url: string): Promise<string> {
   const videoId = extractVideoId(url);
   if (!videoId) throw new Error("Could not extract YouTube video ID from URL");
 
-  const html = await fetchWatchPage(videoId);
+  // Run oEmbed (guaranteed) and watch page fetch (best-effort) in parallel
+  const [oembed, html] = await Promise.all([
+    fetchOEmbed(videoId),
+    fetchWatchPage(videoId),
+  ]);
 
-  // Try multiple marker formats YouTube uses across different server responses
-  const playerResponse = extractJson(
-    html,
-    "ytInitialPlayerResponse = ",
-    "ytInitialPlayerResponse=",
-    "var ytInitialPlayerResponse = ",
-    "var ytInitialPlayerResponse="
-  ) as PlayerResponse | null;
+  const title = oembed.title ?? "";
+  const author = oembed.author_name ?? "";
 
-  const initialData = extractJson(
-    html,
-    "var ytInitialData = ",
-    "ytInitialData = ",
-    "var ytInitialData=",
-    "ytInitialData="
-  );
+  if (!title) {
+    throw new Error(
+      "Could not read this video. It may be private, age-restricted, or unavailable in your region."
+    );
+  }
 
-  // Get info from JSON player response, fall back to meta tags if needed
-  const meta = extractMetaTags(html);
-  const title = playerResponse?.videoDetails?.title || meta.title || "";
-  const description = playerResponse?.videoDetails?.shortDescription || meta.description || "";
-  const author = playerResponse?.videoDetails?.author ?? "";
-  const durationSecs = parseInt(playerResponse?.videoDetails?.lengthSeconds ?? "0", 10);
-  const duration = durationSecs > 0
-    ? `${Math.floor(durationSecs / 60)}:${String(durationSecs % 60).padStart(2, "0")}`
-    : "";
+  // Try caption transcript from the watch page HTML
+  if (html) {
+    const playerResponse = extractJson(
+      html,
+      "ytInitialPlayerResponse = ",
+      "ytInitialPlayerResponse=",
+      "var ytInitialPlayerResponse = "
+    ) as PlayerResponse | null;
 
-  // ── Try to get actual transcript ──────────────────────────────────────────
-  const captionTracks =
-    playerResponse?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
+    const captionTracks =
+      playerResponse?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
 
-  if (captionTracks && captionTracks.length > 0) {
-    const track =
-      captionTracks.find((t) => t.languageCode === "en") ||
-      captionTracks.find((t) => t.languageCode?.startsWith("en")) ||
-      captionTracks[0];
+    if (captionTracks && captionTracks.length > 0) {
+      const track =
+        captionTracks.find((t) => t.languageCode === "en") ||
+        captionTracks.find((t) => t.languageCode?.startsWith("en")) ||
+        captionTracks[0];
 
-    if (track?.baseUrl) {
-      try {
-        const xmlRes = await fetch(track.baseUrl, {
-          headers: {
-            "User-Agent":
-              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-            "Accept-Language": "en-US,en;q=0.9",
-            Referer: "https://www.youtube.com/",
-            Cookie:
-              "CONSENT=YES+cb.20210328-17-p0.en+FX+294; SOCS=CAESEwgDEgk4OTI4NDM3NDEYASAB",
-          },
-        });
-        const xml = await xmlRes.text();
-        const transcript = parseCaptionXml(xml);
-        if (transcript && transcript.length > 100) {
-          // Got a real transcript — use it
-          return transcript.slice(0, 15000);
+      if (track?.baseUrl) {
+        try {
+          const xmlRes = await fetch(track.baseUrl, {
+            headers: {
+              "User-Agent":
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+              "Accept-Language": "en-US,en;q=0.9",
+              Referer: "https://www.youtube.com/",
+              Cookie:
+                "CONSENT=YES+cb.20210328-17-p0.en+FX+294; SOCS=CAESEwgDEgk4OTI4NDM3NDEYASAB",
+            },
+          });
+          const xml = await xmlRes.text();
+          const transcript = parseCaptionXml(xml);
+          if (transcript && transcript.length > 100) {
+            return transcript.slice(0, 15000);
+          }
+        } catch {
+          // Fall through to description fallback
         }
-      } catch {
-        // Caption fetch failed — fall through to description
       }
     }
   }
 
-  // ── Fallback: title + description + chapters ──────────────────────────────
-  // YouTube blocks server-side timedtext access from cloud IPs, so we use
-  // the video's description and chapter list as content for AI to work with.
-  // We only fail if we couldn't get even the title.
-  if (!title || title === "Unknown title") {
-    throw new Error(
-      "Could not read this video. It may be private, age-restricted, or unavailable."
-    );
-  }
+  // Fallback: use title + description + duration for AI to work with
+  const description = extractDescriptionFromHtml(html);
+  const duration = extractDurationFromHtml(html);
 
-  const chapters = initialData ? extractChapters(initialData) : "";
-
-  const parts: string[] = [
+  const parts = [
     `Video: "${title}"`,
-    author ? `By: ${author}` : "",
+    author ? `Channel: ${author}` : "",
     duration ? `Duration: ${duration}` : "",
-    "",
-    "Description:",
-    description,
-  ];
+    description ? `\nDescription:\n${description}` : "",
+  ].filter(Boolean).join("\n");
 
-  if (chapters) {
-    parts.push("", "Chapters:", chapters);
-  }
-
-  const content = parts.filter((p) => p !== undefined).join("\n").trim();
-  return content.slice(0, 15000);
+  return parts.slice(0, 15000);
 }

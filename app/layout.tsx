@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import SessionWrapper from "@/components/SessionWrapper";
+import Footer from "@/components/Footer";
 import "./globals.css";
 
 const geist = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${geist.variable} h-full`}>
       <body className="min-h-full flex flex-col bg-[#07070f] text-white antialiased">
         <SessionWrapper>{children}</SessionWrapper>
+        <Footer />
       </body>
     </html>
   );

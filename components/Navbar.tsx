@@ -28,12 +28,12 @@ export default function Navbar() {
 
         {session?.user ? (
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
+            <Link href="/account" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               {session.user.image && (
                 <Image src={session.user.image} alt="avatar" width={30} height={30} className="rounded-full border border-white/20" />
               )}
               <span className="text-sm text-white/70 hidden sm:block">{session.user.name?.split(" ")[0]}</span>
-            </div>
+            </Link>
             <button onClick={() => signOut()} className="text-xs text-white/40 hover:text-white/60 transition-colors">
               Sign out
             </button>

@@ -63,8 +63,8 @@ export async function POST(req: NextRequest) {
 
     } catch (err) {
       const message = err instanceof Error ? err.message : "Something went wrong";
-      if (message.includes("transcript") || message.includes("No transcript")) {
-        return NextResponse.json({ error: "This video has no captions available. Try an educational video, tutorial, or lecture instead." }, { status: 400 });
+      if (message.includes("caption") || message.includes("transcript") || message.includes("No transcript")) {
+        return NextResponse.json({ error: message }, { status: 400 });
       }
       return NextResponse.json({ error: message }, { status: 500 });
     }
@@ -116,8 +116,8 @@ export async function POST(req: NextRequest) {
 
     } catch (err) {
       const message = err instanceof Error ? err.message : "Something went wrong";
-      if (message.includes("transcript") || message.includes("No transcript")) {
-        return NextResponse.json({ error: "This video has no captions available. Try an educational video, tutorial, or lecture instead." }, { status: 400 });
+      if (message.includes("caption") || message.includes("transcript") || message.includes("No transcript")) {
+        return NextResponse.json({ error: message }, { status: 400 });
       }
       return NextResponse.json({ error: message }, { status: 500 });
     }

@@ -297,7 +297,7 @@ export default function Home() {
               </div>
               <h3 className="text-white font-semibold text-sm mb-2">What this video is about</h3>
               <p className="text-white/55 text-sm leading-relaxed mb-4">
-                Andrej Karpathy gives a deep, practical walkthrough of how large language models like ChatGPT are built. He covers the full training pipeline — from raw text data to a working model — and explains the key ideas behind pretraining, fine-tuning, and RLHF in plain language anyone can follow.
+                Andrej Karpathy gives a deep, practical walkthrough of how large language models like ChatGPT are built. He covers the full training pipeline, from raw text data to a working model, and explains the key ideas behind pretraining, fine-tuning, and RLHF in plain language anyone can follow.
               </p>
               <h3 className="text-white font-semibold text-sm mb-2">Key topics covered</h3>
               <p className="text-white/55 text-sm leading-relaxed">

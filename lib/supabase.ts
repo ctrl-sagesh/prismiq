@@ -76,37 +76,42 @@ export async function checkUserCanScan(
   let scansUsed = user.scans_used || 0;
 
   if (isFreePlan) {
-    // 24-hour window: check if the current period has expired
     if (user.period_start) {
       const periodStart = new Date(user.period_start);
       const hoursSincePeriod = (Date.now() - periodStart.getTime()) / (1000 * 60 * 60);
+
       if (hoursSincePeriod >= 24) {
-        // Period expired — reset so this scan is allowed
-        await supabase
-          .from("users")
-          .update({ scans_used: 0, period_start: null })
-          .eq("email", email);
-        scansUsed = 0;
+        // Period expired — reset and allow
+        await supabase.from("users").update({ scans_used: 0, period_start: null }).eq("email", email);
+        return { allowed: true, scansLeft: limit };
       }
+
+      // Still within the 24h window
+      const scansLeft = Math.max(0, limit - scansUsed);
+      if (scansLeft === 0) {
+        const resetAt = new Date(periodStart.getTime() + 24 * 60 * 60 * 1000).toISOString();
+        return { allowed: false, scansLeft: 0, resetAt };
+      }
+      return { allowed: true, scansLeft };
+
+    } else {
+      // No period_start yet
+      if (scansUsed >= limit) {
+        // User exhausted scans before this feature existed — start the 24h clock now
+        const now = new Date();
+        await supabase.from("users").update({ period_start: now.toISOString() }).eq("email", email);
+        const resetAt = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
+        return { allowed: false, scansLeft: 0, resetAt };
+      }
+      return { allowed: true, scansLeft: limit - scansUsed };
     }
+
   } else {
     // Monthly reset for paid plans
     const resetAt = new Date(user.scans_reset_at);
     const daysSinceReset = (Date.now() - resetAt.getTime()) / (1000 * 60 * 60 * 24);
     if (daysSinceReset >= 30) scansUsed = 0;
+    const scansLeft = Math.max(0, limit - scansUsed);
+    return { allowed: scansLeft > 0, scansLeft };
   }
-
-  const scansLeft = Math.max(0, limit - scansUsed);
-
-  // If free user is out of scans and still within the 24h window, return when they reset
-  if (isFreePlan && scansLeft === 0 && user.period_start) {
-    const periodStart = new Date(user.period_start);
-    const hoursSincePeriod = (Date.now() - periodStart.getTime()) / (1000 * 60 * 60);
-    if (hoursSincePeriod < 24) {
-      const resetAt = new Date(periodStart.getTime() + 24 * 60 * 60 * 1000).toISOString();
-      return { allowed: false, scansLeft: 0, resetAt };
-    }
-  }
-
-  return { allowed: scansLeft > 0, scansLeft };
 }

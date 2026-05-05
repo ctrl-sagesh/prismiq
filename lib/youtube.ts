@@ -2,6 +2,9 @@ export function extractVideoId(url: string): string | null {
   const patterns = [
     /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
     /youtube\.com\/shorts\/([^&\n?#]+)/,
+    /youtube\.com\/live\/([^&\n?#]+)/,       // live stream URLs
+    /youtube\.com\/v\/([^&\n?#]+)/,           // old embed format
+    /(?:m\.)?youtube\.com\/watch\?.*v=([^&\n?#]+)/, // mobile URLs
   ];
   for (const p of patterns) {
     const m = url.match(p);
@@ -36,6 +39,9 @@ interface PlayerResponse {
     shortDescription?: string;
     lengthSeconds?: string;
     author?: string;
+    isLive?: boolean;
+    isLiveContent?: boolean;
+    isUpcoming?: boolean;
   };
   captions?: {
     playerCaptionsTracklistRenderer?: {
@@ -45,7 +51,6 @@ interface PlayerResponse {
 }
 
 // YouTube's official public oEmbed API — works from any IP, no auth needed.
-// Returns title + author reliably even when watch page scraping fails.
 async function fetchOEmbed(videoId: string): Promise<OEmbedResponse> {
   try {
     const res = await fetch(
@@ -59,7 +64,6 @@ async function fetchOEmbed(videoId: string): Promise<OEmbedResponse> {
 }
 
 // Fetch watch page with consent cookies — used to get description + captions.
-// May fail or return minimal content from Vercel IPs; always used as best-effort.
 async function fetchWatchPage(videoId: string): Promise<string> {
   try {
     const res = await fetch(
@@ -109,23 +113,22 @@ function extractJson(html: string, ...markers: string[]): Record<string, unknown
   return null;
 }
 
-function extractDescriptionFromHtml(html: string): string {
-  if (!html) return "";
-
-  // Try JSON player response first
-  const playerResponse = extractJson(
+function extractPlayerResponse(html: string): PlayerResponse | null {
+  return extractJson(
     html,
     "ytInitialPlayerResponse = ",
     "ytInitialPlayerResponse=",
     "var ytInitialPlayerResponse = ",
     "var ytInitialPlayerResponse="
   ) as PlayerResponse | null;
+}
 
+function extractDescriptionFromHtml(html: string): string {
+  if (!html) return "";
+  const playerResponse = extractPlayerResponse(html);
   if (playerResponse?.videoDetails?.shortDescription) {
     return playerResponse.videoDetails.shortDescription;
   }
-
-  // Fall back to meta description tag
   const metaMatch =
     html.match(/<meta name="description" content="([^"]+)"/) ||
     html.match(/<meta property="og:description" content="([^"]+)"/);
@@ -134,12 +137,7 @@ function extractDescriptionFromHtml(html: string): string {
 
 function extractDurationFromHtml(html: string): string {
   if (!html) return "";
-  const playerResponse = extractJson(
-    html,
-    "ytInitialPlayerResponse = ",
-    "ytInitialPlayerResponse=",
-    "var ytInitialPlayerResponse = "
-  ) as PlayerResponse | null;
+  const playerResponse = extractPlayerResponse(html);
   const secs = parseInt(playerResponse?.videoDetails?.lengthSeconds ?? "0", 10);
   if (!secs) return "";
   return `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, "0")}`;
@@ -160,9 +158,24 @@ function parseCaptionXml(xml: string): string {
     .trim();
 }
 
+// Friendly error messages for specific video types
+function getVideoTypeError(playerResponse: PlayerResponse | null, title: string): string | null {
+  if (!playerResponse?.videoDetails) return null;
+  const vd = playerResponse.videoDetails;
+
+  if (vd.isLive) {
+    return `"${title}" is a live stream. Live videos cannot be summarized while broadcasting. Try again after the stream ends.`;
+  }
+  if (vd.isUpcoming) {
+    return `"${title}" is an upcoming stream that hasn't started yet. Come back when it's live or after it ends.`;
+  }
+  // isLiveContent is true for past live replays — those are fine to process
+  return null;
+}
+
 export async function getYoutubeTranscript(url: string): Promise<string> {
   const videoId = extractVideoId(url);
-  if (!videoId) throw new Error("Could not extract YouTube video ID from URL");
+  if (!videoId) throw new Error("Could not extract a video ID from this URL. Make sure it's a valid YouTube link.");
 
   // Run oEmbed (guaranteed) and watch page fetch (best-effort) in parallel
   const [oembed, html] = await Promise.all([
@@ -179,15 +192,13 @@ export async function getYoutubeTranscript(url: string): Promise<string> {
     );
   }
 
-  // Try caption transcript from the watch page HTML
-  if (html) {
-    const playerResponse = extractJson(
-      html,
-      "ytInitialPlayerResponse = ",
-      "ytInitialPlayerResponse=",
-      "var ytInitialPlayerResponse = "
-    ) as PlayerResponse | null;
+  // Parse playerResponse once and check for unsupported video types
+  const playerResponse = html ? extractPlayerResponse(html) : null;
+  const typeError = getVideoTypeError(playerResponse, title);
+  if (typeError) throw new Error(typeError);
 
+  // Try caption transcript from the watch page HTML
+  if (html && playerResponse) {
     const captionTracks =
       playerResponse?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
 

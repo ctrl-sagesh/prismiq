@@ -63,10 +63,11 @@ export async function POST(req: NextRequest) {
 
     } catch (err) {
       const message = err instanceof Error ? err.message : "Something went wrong";
-      if (message.includes("caption") || message.includes("transcript") || message.includes("No transcript")) {
-        return NextResponse.json({ error: message }, { status: 400 });
-      }
-      return NextResponse.json({ error: message }, { status: 500 });
+      const isUserError = message.includes("caption") || message.includes("transcript")
+        || message.includes("live stream") || message.includes("upcoming")
+        || message.includes("private") || message.includes("age-restricted")
+        || message.includes("Could not read") || message.includes("Could not extract");
+      return NextResponse.json({ error: message }, { status: isUserError ? 400 : 500 });
     }
 
   } else {
@@ -116,10 +117,11 @@ export async function POST(req: NextRequest) {
 
     } catch (err) {
       const message = err instanceof Error ? err.message : "Something went wrong";
-      if (message.includes("caption") || message.includes("transcript") || message.includes("No transcript")) {
-        return NextResponse.json({ error: message }, { status: 400 });
-      }
-      return NextResponse.json({ error: message }, { status: 500 });
+      const isUserError = message.includes("caption") || message.includes("transcript")
+        || message.includes("live stream") || message.includes("upcoming")
+        || message.includes("private") || message.includes("age-restricted")
+        || message.includes("Could not read") || message.includes("Could not extract");
+      return NextResponse.json({ error: message }, { status: isUserError ? 400 : 500 });
     }
   }
 }

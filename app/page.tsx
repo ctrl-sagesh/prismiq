@@ -7,6 +7,7 @@ import PaywallModal from "@/components/PaywallModal";
 
 type InputType = "url" | "file";
 type Action = "summarize" | "notes" | "qa" | "search";
+type SummarizeMode = "brief" | "detailed";
 type ModalType = "signin_required" | "upgrade_required" | null;
 
 const actions = [
@@ -31,6 +32,7 @@ export default function Home() {
   const [file, setFile] = useState<File | null>(null);
   const [action, setAction] = useState<Action>("summarize");
   const [searchQuery, setSearchQuery] = useState("");
+  const [summarizeMode, setSummarizeMode] = useState<SummarizeMode>("detailed");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -60,6 +62,7 @@ export default function Home() {
     formData.append("action", action);
     formData.append("inputType", inputType);
     if (action === "search") formData.append("searchQuery", searchQuery);
+    if (action === "summarize") formData.append("summarizeMode", summarizeMode);
     if (inputType === "url") formData.append("url", url);
     if (inputType === "file" && file) formData.append("file", file);
 
@@ -177,6 +180,18 @@ export default function Home() {
               </button>
             ))}
           </div>
+
+          {/* Brief / Detailed toggle for summarize */}
+          {action === "summarize" && (
+            <div className="flex gap-2 mt-3">
+              {(["brief", "detailed"] as SummarizeMode[]).map((mode) => (
+                <button key={mode} onClick={() => setSummarizeMode(mode)}
+                  className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all border ${summarizeMode === mode ? "border-violet-500/60 bg-violet-500/15 text-violet-300" : "border-white/10 bg-white/[0.03] text-white/40 hover:text-white/60"}`}>
+                  {mode === "brief" ? "⚡ Brief — Quick overview" : "📖 Detailed — Full breakdown"}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Search input */}
           {action === "search" && (

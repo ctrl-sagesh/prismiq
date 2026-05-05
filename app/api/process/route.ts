@@ -6,6 +6,7 @@ import { scrapeUrl } from "@/lib/scraper";
 import { getYoutubeTranscript } from "@/lib/youtube";
 import { parsePdf } from "@/lib/pdfParser";
 import { checkUserCanScan, incrementUserScans } from "@/lib/supabase";
+import { SummarizeMode } from "@/lib/claude";
 
 export const maxDuration = 60;
 
@@ -30,27 +31,28 @@ export async function POST(req: NextRequest) {
       const formData = await req.formData();
       const action = formData.get("action") as Action;
       const searchQuery = formData.get("searchQuery") as string | undefined;
+      const summarizeMode = (formData.get("summarizeMode") as SummarizeMode) || "detailed";
       const inputType = formData.get("inputType") as string;
       let result = "";
 
       if (inputType === "url") {
         const url = formData.get("url") as string;
         const content = isYoutubeUrl(url) ? await getYoutubeTranscript(url) : await scrapeUrl(url);
-        result = await processWithClaude(content, action, searchQuery || undefined);
+        result = await processWithClaude(content, action, searchQuery || undefined, summarizeMode);
       } else if (inputType === "file") {
         const file = formData.get("file") as File;
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
         if (file.type === "application/pdf") {
           const text = await parsePdf(buffer);
-          result = await processWithClaude(text, action, searchQuery || undefined);
+          result = await processWithClaude(text, action, searchQuery || undefined, summarizeMode);
         } else if (file.type.startsWith("image/")) {
           const base64 = buffer.toString("base64");
           const mediaType = file.type as "image/jpeg" | "image/png" | "image/gif" | "image/webp";
-          result = await processImageWithClaude(base64, mediaType, action, searchQuery || undefined);
+          result = await processImageWithClaude(base64, mediaType, action, searchQuery || undefined, summarizeMode);
         } else {
           const text = buffer.toString("utf-8").slice(0, 15000);
-          result = await processWithClaude(text, action, searchQuery || undefined);
+          result = await processWithClaude(text, action, searchQuery || undefined, summarizeMode);
         }
       } else {
         return NextResponse.json({ error: "Invalid input type" }, { status: 400 });
@@ -78,27 +80,28 @@ export async function POST(req: NextRequest) {
       const formData = await req.formData();
       const action = formData.get("action") as Action;
       const searchQuery = formData.get("searchQuery") as string | undefined;
+      const summarizeMode = (formData.get("summarizeMode") as SummarizeMode) || "detailed";
       const inputType = formData.get("inputType") as string;
       let result = "";
 
       if (inputType === "url") {
         const url = formData.get("url") as string;
         const content = isYoutubeUrl(url) ? await getYoutubeTranscript(url) : await scrapeUrl(url);
-        result = await processWithClaude(content, action, searchQuery || undefined);
+        result = await processWithClaude(content, action, searchQuery || undefined, summarizeMode);
       } else if (inputType === "file") {
         const file = formData.get("file") as File;
         const arrayBuffer = await file.arrayBuffer();
         const buffer = Buffer.from(arrayBuffer);
         if (file.type === "application/pdf") {
           const text = await parsePdf(buffer);
-          result = await processWithClaude(text, action, searchQuery || undefined);
+          result = await processWithClaude(text, action, searchQuery || undefined, summarizeMode);
         } else if (file.type.startsWith("image/")) {
           const base64 = buffer.toString("base64");
           const mediaType = file.type as "image/jpeg" | "image/png" | "image/gif" | "image/webp";
-          result = await processImageWithClaude(base64, mediaType, action, searchQuery || undefined);
+          result = await processImageWithClaude(base64, mediaType, action, searchQuery || undefined, summarizeMode);
         } else {
           const text = buffer.toString("utf-8").slice(0, 15000);
-          result = await processWithClaude(text, action, searchQuery || undefined);
+          result = await processWithClaude(text, action, searchQuery || undefined, summarizeMode);
         }
       } else {
         return NextResponse.json({ error: "Invalid input type" }, { status: 400 });

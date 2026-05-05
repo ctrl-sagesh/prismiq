@@ -12,9 +12,9 @@ const plans = [
     name: "Starter",
     price: "$3.99",
     period: "/month",
-    tagline: "Perfect for occasional use",
+    tagline: "Good for light, regular use",
     scans: "25 scans / month",
-    features: ["All input types (links, PDFs, images)", "Summarize & Key Notes", "Q&A generation", "Search inside content", "Download as Markdown"],
+    features: ["Links, PDFs, images and YouTube", "Summarize and Key Notes", "Q&A generation", "Search inside content", "Download as Markdown"],
     cta: "Get Starter",
     href: CHECKOUT.starter,
     highlight: false,
@@ -23,9 +23,9 @@ const plans = [
     name: "Pro",
     price: "$8.99",
     period: "/month",
-    tagline: "Best for students & researchers",
+    tagline: "Built for students and researchers",
     scans: "100 scans / month",
-    features: ["Everything in Starter", "Priority AI processing", "Longer documents & videos", "Early access to new features", "Email support"],
+    features: ["Everything in Starter", "Faster AI responses", "Longer documents and videos", "Early access to new features", "Email support"],
     cta: "Get Pro",
     href: CHECKOUT.pro,
     highlight: true,
@@ -34,9 +34,9 @@ const plans = [
     name: "Unlimited",
     price: "$15.99",
     period: "/month",
-    tagline: "For power users & teams",
+    tagline: "For heavy users and teams",
     scans: "Unlimited scans",
-    features: ["Everything in Pro", "Truly unlimited scans", "Bulk content processing", "Highest priority processing", "Priority support"],
+    features: ["Everything in Pro", "No scan limits ever", "Bulk content processing", "Highest priority processing", "Priority support"],
     cta: "Get Unlimited",
     href: CHECKOUT.unlimited,
     highlight: false,
@@ -58,13 +58,13 @@ export default function UpgradePage() {
               fits you
             </span>
           </h1>
-          <p className="text-white/50">Start free. Upgrade anytime. Cancel anytime.</p>
+          <p className="text-white/50">Start free. No card needed. Cancel anytime.</p>
         </div>
 
         {/* Free tier reminder */}
         <div className="flex items-center gap-3 mb-10 px-4 py-2.5 rounded-full border border-white/10 bg-white/5 text-sm text-white/50">
           <span className="text-green-400">✓</span>
-          2 free scans without account · 2 more after signing in with Google
+          2 free scans, no account needed. Sign in with Google for 2 more.
         </div>
 
         {/* Pricing Cards */}
@@ -109,10 +109,10 @@ export default function UpgradePage() {
         <div className="w-full max-w-xl space-y-3">
           <h3 className="text-white font-semibold text-center mb-5">Common questions</h3>
           {[
-            { q: "Do I need a card for the free plan?", a: "No. 2 free scans require nothing. Sign in with Google for 2 more — still no card." },
-            { q: "Can I cancel anytime?", a: "Yes, cancel with one click. No questions asked, no hidden fees." },
-            { q: "What counts as one scan?", a: "Each time you process a link, video, file, or image counts as one scan." },
-            { q: "What payment methods are accepted?", a: "We accept all major cards, PayPal, and more via our secure checkout." },
+            { q: "Do I need a card for the free plan?", a: "No card needed at all. You get 2 free scans just by visiting, and 2 more when you sign in with Google." },
+            { q: "Can I cancel anytime?", a: "Yes, cancel with one click from your account. No questions asked, no hidden fees." },
+            { q: "What counts as one scan?", a: "Processing any link, video, PDF, or image once counts as one scan." },
+            { q: "What payment methods are accepted?", a: "We accept all major credit cards and PayPal via a secure checkout." },
           ].map((faq) => (
             <div key={faq.q} className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
               <p className="text-white/80 text-sm font-medium mb-1">{faq.q}</p>

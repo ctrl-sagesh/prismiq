@@ -18,13 +18,13 @@ const actions = [
 ];
 
 const steps = [
-  { icon: "📎", title: "Drop anything", desc: "Link, YouTube video, PDF, or image" },
-  { icon: "⚡", title: "Pick an action", desc: "Summarize, notes, Q&A, or search" },
-  { icon: "✅", title: "Get your answer", desc: "Clear, human-written results instantly" },
+  { icon: "📎", title: "Drop anything", desc: "A link, YouTube video, PDF, or image" },
+  { icon: "⚡", title: "Pick what you need", desc: "Summary, notes, Q&A, or search" },
+  { icon: "✅", title: "Read the result", desc: "Clear and useful — no filler" },
 ];
 
-const works = ["YouTube tutorials & lectures", "Any website or article", "PDF documents", "Screenshots & images", "Text files & notes"];
-const doesnt = ["Movie or TV clips", "Music videos", "Private videos", "Non-English videos"];
+const works = ["YouTube tutorials and lectures", "Any website or article", "PDF documents", "Screenshots and images", "Text files and notes"];
+const doesnt = ["Movies and TV clips", "Music videos", "Private or unlisted videos", "Videos with no subtitles"];
 
 export default function Home() {
   const [inputType, setInputType] = useState<InputType>("url");
@@ -110,7 +110,7 @@ export default function Home() {
             </span>
           </h1>
           <p className="text-white/50 text-lg leading-relaxed max-w-lg mx-auto">
-            Paste any YouTube video, website, PDF or image and get a clear summary, study notes or Q&A in seconds.
+            Paste a YouTube video, website, PDF or image. Get a clear summary, study notes or Q&A in seconds.
           </p>
         </div>
 
@@ -187,7 +187,7 @@ export default function Home() {
               {(["brief", "detailed"] as SummarizeMode[]).map((mode) => (
                 <button key={mode} onClick={() => setSummarizeMode(mode)}
                   className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all border ${summarizeMode === mode ? "border-violet-500/60 bg-violet-500/15 text-violet-300" : "border-white/10 bg-white/[0.03] text-white/40 hover:text-white/60"}`}>
-                  {mode === "brief" ? "⚡ Brief — Quick overview" : "📖 Detailed — Full breakdown"}
+                  {mode === "brief" ? "⚡ Quick overview" : "📖 Full breakdown"}
                 </button>
               ))}
             </div>
@@ -264,7 +264,7 @@ export default function Home() {
         {/* Social proof */}
         {!result && (
           <div className="text-center mt-4">
-            <p className="text-white/20 text-xs">Used by students, researchers and professionals</p>
+            <p className="text-white/20 text-xs">Trusted by students, researchers and professionals</p>
           </div>
         )}
       </main>

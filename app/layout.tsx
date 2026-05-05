@@ -6,8 +6,20 @@ import "./globals.css";
 const geist = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Prismiq | Understand Anything Instantly",
-  description: "Paste any YouTube link, website, PDF or image. Get instant summaries, study notes, Q&A and more powered by AI.",
+  title: "Prismiq — Summarize YouTube, PDFs and Websites Instantly",
+  description: "Paste any YouTube video, website, PDF or image and get a clear summary, study notes or Q&A in seconds. Free to try, no account needed.",
+  openGraph: {
+    title: "Prismiq — Summarize Anything Instantly",
+    description: "Paste a YouTube video, website, PDF or image. Get a clear summary, study notes or Q&A in seconds.",
+    url: "https://prismiqai.vercel.app",
+    siteName: "Prismiq",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Prismiq — Summarize Anything Instantly",
+    description: "Paste a YouTube video, website, PDF or image. Get a clear summary, study notes or Q&A in seconds.",
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

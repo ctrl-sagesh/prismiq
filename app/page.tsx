@@ -39,7 +39,6 @@ export default function Home() {
   const [modal, setModal] = useState<ModalType>(null);
   const [scansLeft, setScansLeft] = useState<number | null>(null);
   const [dragging, setDragging] = useState(false);
-  const [showFormats, setShowFormats] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -227,32 +226,53 @@ export default function Home() {
           )}
         </div>
 
-        {/* What works */}
-        <div className="w-full max-w-2xl mb-8">
-          <button onClick={() => setShowFormats(!showFormats)}
-            className="flex items-center gap-1.5 text-xs text-white/30 hover:text-white/50 transition-colors mx-auto">
-            <span>{showFormats ? "▲" : "▼"}</span> What works with Prismiq?
-          </button>
-
-          {showFormats && (
-            <div className="mt-4 rounded-2xl border border-white/10 bg-white/[0.02] p-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                <div>
-                  <p className="text-green-400 text-xs font-semibold mb-2">✅ Works great with</p>
-                  <div className="space-y-1.5">
-                    {works.map(w => <p key={w} className="text-white/50 text-xs flex gap-2"><span>•</span>{w}</p>)}
-                  </div>
-                </div>
-                <div>
-                  <p className="text-orange-400 text-xs font-semibold mb-2">⚠️ Does not work with</p>
-                  <div className="space-y-1.5">
-                    {doesnt.map(d => <p key={d} className="text-white/40 text-xs flex gap-2"><span>•</span>{d}</p>)}
-                  </div>
-                </div>
+        {/* What works — always visible */}
+        <div className="w-full max-w-2xl mb-8 rounded-2xl border border-white/10 bg-white/[0.02] p-5">
+          <p className="text-white/30 text-xs font-semibold uppercase tracking-wider mb-4">What works with Prismiq</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <p className="text-green-400 text-xs font-semibold mb-2">Works great with</p>
+              <div className="space-y-1.5">
+                {works.map(w => (
+                  <p key={w} className="text-white/50 text-xs flex items-center gap-2">
+                    <span className="text-green-400 shrink-0">✓</span>{w}
+                  </p>
+                ))}
               </div>
             </div>
-          )}
+            <div>
+              <p className="text-orange-400 text-xs font-semibold mb-2">Does not work with</p>
+              <div className="space-y-1.5">
+                {doesnt.map(d => (
+                  <p key={d} className="text-white/40 text-xs flex items-center gap-2">
+                    <span className="text-orange-400/70 shrink-0">✕</span>{d}
+                  </p>
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
+
+        {/* Example output — shown when no result yet */}
+        {!result && (
+          <div className="w-full max-w-2xl mb-8">
+            <p className="text-center text-white/20 text-xs uppercase tracking-wider mb-4">Example output</p>
+            <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-5">
+              <div className="flex items-center gap-2 mb-4 pb-3 border-b border-white/10">
+                <span className="text-white/25 text-xs truncate">youtube.com/watch?v=aircAruvnKk</span>
+                <span className="ml-auto shrink-0 text-xs text-violet-300 bg-violet-500/10 px-2 py-0.5 rounded-full border border-violet-500/20">Summary</span>
+              </div>
+              <h3 className="text-white font-semibold text-sm mb-2">What this video is about</h3>
+              <p className="text-white/55 text-sm leading-relaxed mb-4">
+                Andrej Karpathy gives a deep, practical walkthrough of how large language models like ChatGPT are built. He covers the full training pipeline — from raw text data to a working model — and explains the key ideas behind pretraining, fine-tuning, and RLHF in plain language anyone can follow.
+              </p>
+              <h3 className="text-white font-semibold text-sm mb-2">Key topics covered</h3>
+              <p className="text-white/55 text-sm leading-relaxed">
+                The video explains how transformers learn to predict the next token, why scale matters so much, and how instruction-tuning turns a raw model into a helpful assistant. Karpathy also shares honest mental models for understanding what these models can and cannot do reliably.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* Result */}
         {result && (
@@ -262,11 +282,9 @@ export default function Home() {
         )}
 
         {/* Social proof */}
-        {!result && (
-          <div className="text-center mt-4">
-            <p className="text-white/20 text-xs">Trusted by students, researchers and professionals</p>
-          </div>
-        )}
+        <div className="text-center mt-2 mb-4">
+          <p className="text-white/15 text-xs">Trusted by students, researchers and professionals</p>
+        </div>
       </main>
     </>
   );

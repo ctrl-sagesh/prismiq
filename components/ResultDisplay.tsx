@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from "react";
+import React, { useState } from "react";
 
 export default function ResultDisplay({ result, action }: { result: string; action: string }) {
   const [copied, setCopied] = useState(false);
@@ -28,6 +28,18 @@ export default function ResultDisplay({ result, action }: { result: string; acti
     URL.revokeObjectURL(url);
   };
 
+  // Render inline bold (**text**) and italic (*text*)
+  const renderInline = (text: string): React.ReactNode => {
+    const parts = text.split(/(\*\*.*?\*\*|\*.*?\*)/g);
+    return parts.map((part, j) => {
+      if (part.startsWith("**") && part.endsWith("**"))
+        return <strong key={j} className="text-white/90 font-semibold">{part.slice(2, -2)}</strong>;
+      if (part.startsWith("*") && part.endsWith("*"))
+        return <em key={j} className="italic">{part.slice(1, -1)}</em>;
+      return part;
+    });
+  };
+
   const renderLine = (line: string, i: number) => {
     // H1 heading
     if (line.startsWith("# ")) return <h1 key={i} className="text-xl font-bold text-white mt-5 mb-2 first:mt-0">{line.slice(2)}</h1>;
@@ -43,22 +55,21 @@ export default function ResultDisplay({ result, action }: { result: string; acti
     if (line.startsWith("A:")) return <p key={i} className="text-white/70 text-sm leading-relaxed mt-1 ml-4">{line}</p>;
     // Bullet point
     if (line.startsWith("- ") || line.startsWith("* ")) {
-      const text = line.slice(2).replace(/\*\*(.*?)\*\*/g, "$1");
       return (
         <div key={i} className="flex gap-2.5 text-sm text-white/70 leading-relaxed">
           <span className="text-violet-400 mt-1 shrink-0">·</span>
-          <span>{text}</span>
+          <span>{renderInline(line.slice(2))}</span>
         </div>
       );
     }
     // Numbered list
     if (/^\d+\.\s/.test(line)) {
-      const text = line.replace(/^\d+\.\s/, "").replace(/\*\*(.*?)\*\*/g, "$1");
+      const text = line.replace(/^\d+\.\s/, "");
       const num = line.match(/^(\d+)\./)?.[1];
       return (
         <div key={i} className="flex gap-2.5 text-sm text-white/70 leading-relaxed">
           <span className="text-violet-400 shrink-0 font-medium">{num}.</span>
-          <span>{text}</span>
+          <span>{renderInline(text)}</span>
         </div>
       );
     }
@@ -80,8 +91,7 @@ export default function ResultDisplay({ result, action }: { result: string; acti
       );
     }
     // Normal paragraph
-    const cleaned = line.replace(/\*\*(.*?)\*\*/g, "$1").replace(/\*(.*?)\*/g, "$1");
-    return <p key={i} className="text-sm text-white/70 leading-relaxed">{cleaned}</p>;
+    return <p key={i} className="text-sm text-white/70 leading-relaxed">{renderInline(line)}</p>;
   };
 
   return (

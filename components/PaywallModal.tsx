@@ -2,8 +2,6 @@
 
 import { signIn } from "next-auth/react";
 import { useEffect, useState } from "react";
-import Link from "next/link";
-
 const CHECKOUT = {
   starter: "https://prismiq.lemonsqueezy.com/checkout/buy/4ab47c49-588f-4cff-8751-744d0097764e",
   pro: "https://prismiq.lemonsqueezy.com/checkout/buy/4c620875-f1a5-4b0d-a61c-f0f6c1a51c77",
@@ -112,7 +110,7 @@ export default function PaywallModal({
               <p className="text-white/70 text-sm font-semibold">Starter</p>
               <p className="text-violet-300/70 text-xs mt-0.5">25 scans / month</p>
             </div>
-            <p className="text-white font-bold text-base shrink-0">$3.99<span className="text-xs font-normal text-white/40">/mo</span></p>
+            <p className="text-white font-bold text-base shrink-0">$3.99<span className="text-xs font-normal text-white/40"> /mo</span></p>
             <span className="text-white/30 group-hover:text-white/60 transition-colors text-sm">→</span>
           </a>
 

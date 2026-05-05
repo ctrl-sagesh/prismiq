@@ -20,6 +20,21 @@ function decodeHtmlEntities(text: string): string {
     .replace(/&apos;/g, "'");
 }
 
+// Extract video info from HTML meta tags — always present, even when JSON parsing fails
+function extractMetaTags(html: string): { title: string; description: string } {
+  const titleMatch =
+    html.match(/<title>([^<]+)<\/title>/) ||
+    html.match(/<meta name="title" content="([^"]+)"/) ||
+    html.match(/<meta property="og:title" content="([^"]+)"/);
+  const descMatch =
+    html.match(/<meta name="description" content="([^"]+)"/) ||
+    html.match(/<meta property="og:description" content="([^"]+)"/);
+
+  let title = decodeHtmlEntities((titleMatch?.[1] ?? "").replace(/ - YouTube$/, "").trim());
+  const description = decodeHtmlEntities(descMatch?.[1] ?? "");
+  return { title, description };
+}
+
 interface CaptionTrack {
   languageCode: string;
   baseUrl: string;
@@ -144,21 +159,19 @@ export async function getYoutubeTranscript(url: string): Promise<string> {
     "ytInitialData="
   );
 
-  if (!playerResponse) {
-    throw new Error("Could not parse YouTube page. Try a different video.");
-  }
-
-  const title = playerResponse.videoDetails?.title ?? "Unknown title";
-  const description = playerResponse.videoDetails?.shortDescription ?? "";
-  const author = playerResponse.videoDetails?.author ?? "";
-  const durationSecs = parseInt(playerResponse.videoDetails?.lengthSeconds ?? "0", 10);
+  // Get info from JSON player response, fall back to meta tags if needed
+  const meta = extractMetaTags(html);
+  const title = playerResponse?.videoDetails?.title || meta.title || "";
+  const description = playerResponse?.videoDetails?.shortDescription || meta.description || "";
+  const author = playerResponse?.videoDetails?.author ?? "";
+  const durationSecs = parseInt(playerResponse?.videoDetails?.lengthSeconds ?? "0", 10);
   const duration = durationSecs > 0
     ? `${Math.floor(durationSecs / 60)}:${String(durationSecs % 60).padStart(2, "0")}`
     : "";
 
   // ── Try to get actual transcript ──────────────────────────────────────────
   const captionTracks =
-    playerResponse.captions?.playerCaptionsTracklistRenderer?.captionTracks;
+    playerResponse?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
 
   if (captionTracks && captionTracks.length > 0) {
     const track =

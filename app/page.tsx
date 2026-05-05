@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import ResultDisplay from "@/components/ResultDisplay";
 import PaywallModal from "@/components/PaywallModal";
@@ -39,7 +39,39 @@ export default function Home() {
   const [modal, setModal] = useState<ModalType>(null);
   const [scansLeft, setScansLeft] = useState<number | null>(null);
   const [resetAt, setResetAt] = useState<string | undefined>(undefined);
+  const [isSignedIn, setIsSignedIn] = useState(false);
+  const [pageTimer, setPageTimer] = useState("");
   const [dragging, setDragging] = useState(false);
+
+  // Fetch scan status on mount so signed-in users see their count immediately
+  useEffect(() => {
+    fetch("/api/scan-status")
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.signedIn) {
+          setIsSignedIn(true);
+          setScansLeft(data.scansLeft ?? null);
+          if (data.resetAt) setResetAt(data.resetAt);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // Live countdown for the main page scan counter
+  useEffect(() => {
+    if (!resetAt) { setPageTimer(""); return; }
+    function tick() {
+      const diff = new Date(resetAt!).getTime() - Date.now();
+      if (diff <= 0) { setPageTimer("00:00:00"); return; }
+      const h = Math.floor(diff / (1000 * 60 * 60));
+      const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      const s = Math.floor((diff % (1000 * 60)) / 1000);
+      setPageTimer(`${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`);
+    }
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [resetAt]);
   const fileRef = useRef<HTMLInputElement>(null);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -81,6 +113,7 @@ export default function Home() {
       }
       setResult(data.result);
       setScansLeft(data.scansLeft);
+      if (data.isSignedIn) setIsSignedIn(true);
       // scroll to result
       setTimeout(() => document.getElementById("result")?.scrollIntoView({ behavior: "smooth" }), 100);
     } catch {
@@ -250,12 +283,30 @@ export default function Home() {
             )}
           </button>
 
-          {/* Scan counter */}
-          {scansLeft !== null && (
-            <p className="mt-3 text-center text-xs text-white/25">
-              {scansLeft > 0 ? `${scansLeft} free scan${scansLeft !== 1 ? "s" : ""} left` : "No free scans left"} ·{" "}
-              <a href="/upgrade" className="text-violet-400 hover:underline">Upgrade for more</a>
-            </p>
+          {/* Scan status — shown for signed-in users */}
+          {isSignedIn && scansLeft !== null && (
+            <div className="mt-3 flex items-center justify-center">
+              {scansLeft > 0 ? (
+                <p className="text-xs text-white/30 text-center">
+                  <span className="text-green-400 font-semibold">{scansLeft}</span> free scan{scansLeft !== 1 ? "s" : ""} left today ·{" "}
+                  <a href="/upgrade" className="text-violet-400 hover:underline">Upgrade for more</a>
+                </p>
+              ) : pageTimer ? (
+                <div className="flex flex-col items-center gap-0.5">
+                  <p className="text-[11px] text-white/25 uppercase tracking-wider">Free scans reset in</p>
+                  <p className="text-base font-bold tabular-nums"
+                    style={{ background: "linear-gradient(to right, #a78bfa, #f472b6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+                    {pageTimer}
+                  </p>
+                  <p className="text-[10px] text-white/20">· <a href="/upgrade" className="text-violet-400 hover:underline">Upgrade to skip the wait</a></p>
+                </div>
+              ) : (
+                <p className="text-xs text-white/30 text-center">
+                  No free scans left ·{" "}
+                  <a href="/upgrade" className="text-violet-400 hover:underline">Upgrade for more</a>
+                </p>
+              )}
+            </div>
           )}
         </div>
 

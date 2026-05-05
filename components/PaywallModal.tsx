@@ -103,59 +103,53 @@ export default function PaywallModal({
           )}
         </div>
 
-        <div className="grid grid-cols-3 gap-3 mb-5">
+        {/* Plan rows — compact, no bullet clutter */}
+        <div className="space-y-2.5 mb-5">
           {/* Starter */}
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-center">
-            <p className="text-white/60 text-xs font-medium mb-1">Starter</p>
-            <p className="text-2xl font-bold text-white">$3<span className="text-sm font-normal text-white/40">/mo</span></p>
-            <p className="text-violet-300 text-xs mt-1 mb-3">25 scans/month</p>
-            <div className="space-y-1.5 text-left mb-4">
-              {["All input types", "Summarize & Notes", "Q&A & Search", "Download notes"].map(f => (
-                <p key={f} className="text-xs text-white/50 flex gap-1.5"><span className="text-violet-400">✓</span>{f}</p>
-              ))}
+          <a href={CHECKOUT.starter} target="_blank" rel="noopener noreferrer"
+            className="flex items-center gap-4 px-4 py-3.5 rounded-xl border border-white/10 bg-white/[0.04] hover:border-white/20 hover:bg-white/[0.07] transition-all group">
+            <div className="flex-1 min-w-0">
+              <p className="text-white/70 text-sm font-semibold">Starter</p>
+              <p className="text-violet-300/70 text-xs mt-0.5">25 scans / month</p>
             </div>
-            <a href={CHECKOUT.starter} target="_blank" rel="noopener noreferrer" className="block w-full py-2 rounded-lg border border-white/20 text-white/70 text-xs hover:bg-white/5 transition-colors">
-              Get Starter
-            </a>
-          </div>
+            <p className="text-white font-bold text-base shrink-0">$3.99<span className="text-xs font-normal text-white/40">/mo</span></p>
+            <span className="text-white/30 group-hover:text-white/60 transition-colors text-sm">→</span>
+          </a>
 
-          {/* Pro - highlighted */}
-          <div className="rounded-xl border border-violet-500/50 bg-violet-500/10 p-4 text-center relative">
-            <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full bg-gradient-to-r from-violet-600 to-pink-600 text-white text-[10px] font-bold whitespace-nowrap">
-              POPULAR
+          {/* Pro */}
+          <a href={CHECKOUT.pro} target="_blank" rel="noopener noreferrer"
+            className="flex items-center gap-4 px-4 py-3.5 rounded-xl border border-violet-500/50 bg-violet-500/10 hover:bg-violet-500/15 transition-all group relative">
+            <div className="absolute -top-2.5 left-4 px-2 py-0.5 rounded-full bg-gradient-to-r from-violet-600 to-pink-600 text-white text-[10px] font-bold">
+              MOST POPULAR
             </div>
-            <p className="text-violet-300 text-xs font-medium mb-1">Pro</p>
-            <p className="text-2xl font-bold text-white">$8.99<span className="text-sm font-normal text-white/40">/mo</span></p>
-            <p className="text-violet-300 text-xs mt-1 mb-3">100 scans/month</p>
-            <div className="space-y-1.5 text-left mb-4">
-              {["Everything in Starter", "Priority processing", "Longer documents", "Early new features"].map(f => (
-                <p key={f} className="text-xs text-violet-200 flex gap-1.5"><span className="text-violet-400">✓</span>{f}</p>
-              ))}
+            <div className="flex-1 min-w-0 mt-0.5">
+              <p className="text-violet-200 text-sm font-semibold">Pro</p>
+              <p className="text-violet-300/70 text-xs mt-0.5">100 scans / month</p>
             </div>
-            <a href={CHECKOUT.pro} target="_blank" rel="noopener noreferrer" className="block w-full py-2 rounded-lg bg-gradient-to-r from-violet-600 to-pink-600 text-white text-xs font-semibold hover:opacity-90 transition-opacity">
-              Get Pro
-            </a>
-          </div>
+            <p className="text-white font-bold text-base shrink-0">$8.99<span className="text-xs font-normal text-white/40">/mo</span></p>
+            <span className="text-violet-300 group-hover:text-violet-100 transition-colors text-sm">→</span>
+          </a>
 
           {/* Unlimited */}
-          <div className="rounded-xl border border-white/10 bg-white/5 p-4 text-center">
-            <p className="text-white/60 text-xs font-medium mb-1">Unlimited</p>
-            <p className="text-2xl font-bold text-white">$15.99<span className="text-sm font-normal text-white/40">/mo</span></p>
-            <p className="text-violet-300 text-xs mt-1 mb-3">Unlimited scans</p>
-            <div className="space-y-1.5 text-left mb-4">
-              {["Everything in Pro", "Unlimited scans", "Bulk processing", "Priority support"].map(f => (
-                <p key={f} className="text-xs text-white/50 flex gap-1.5"><span className="text-violet-400">✓</span>{f}</p>
-              ))}
+          <a href={CHECKOUT.unlimited} target="_blank" rel="noopener noreferrer"
+            className="flex items-center gap-4 px-4 py-3.5 rounded-xl border border-white/10 bg-white/[0.04] hover:border-white/20 hover:bg-white/[0.07] transition-all group">
+            <div className="flex-1 min-w-0">
+              <p className="text-white/70 text-sm font-semibold">Unlimited</p>
+              <p className="text-violet-300/70 text-xs mt-0.5">Unlimited scans</p>
             </div>
-            <a href={CHECKOUT.unlimited} target="_blank" rel="noopener noreferrer" className="block w-full py-2 rounded-lg border border-white/20 text-white/70 text-xs hover:bg-white/5 transition-colors">
-              Get Unlimited
-            </a>
-          </div>
+            <p className="text-white font-bold text-base shrink-0">$15.99<span className="text-xs font-normal text-white/40">/mo</span></p>
+            <span className="text-white/30 group-hover:text-white/60 transition-colors text-sm">→</span>
+          </a>
         </div>
 
-        <button onClick={onClose} className="w-full text-xs text-white/30 hover:text-white/50 transition-colors">
-          Maybe later
-        </button>
+        <div className="flex items-center justify-between">
+          <a href="/upgrade" className="text-xs text-violet-400/60 hover:text-violet-400 transition-colors">
+            See full plan details →
+          </a>
+          <button onClick={onClose} className="text-xs text-white/30 hover:text-white/50 transition-colors">
+            Maybe later
+          </button>
+        </div>
       </div>
     </div>
   );

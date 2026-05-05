@@ -10,3 +10,22 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-14px) rotate(3deg); }
+}
+
+@keyframes float-reverse {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(10px); }
+}
+
+.animate-float       { animation: float 4s ease-in-out infinite; }
+.animate-float-slow  { animation: float-slow 6s ease-in-out infinite; }
+.animate-float-rev   { animation: float-reverse 5s ease-in-out infinite; }

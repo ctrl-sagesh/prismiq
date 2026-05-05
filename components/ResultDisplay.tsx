@@ -19,11 +19,11 @@ export default function ResultDisplay({ result, action }: { result: string; acti
   };
 
   const handleDownload = () => {
-    const blob = new Blob([result], { type: "text/markdown" });
+    const blob = new Blob([result], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `prismiq-${action}-${Date.now()}.md`;
+    a.download = `prismiq-${action}-${Date.now()}.txt`;
     a.click();
     URL.revokeObjectURL(url);
   };

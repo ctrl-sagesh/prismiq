@@ -47,8 +47,41 @@ export default function UpgradePage() {
   return (
     <>
       <Navbar />
-      <main className="flex flex-col items-center px-4 pt-28 pb-20 min-h-screen">
-        <div className="text-center mb-4 max-w-xl">
+
+      {/* Background glow orbs */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-[-10%] left-[-5%] w-[420px] h-[420px] rounded-full bg-violet-600/15 blur-[120px]" />
+        <div className="absolute top-[20%] right-[-8%] w-[350px] h-[350px] rounded-full bg-pink-600/12 blur-[100px]" />
+        <div className="absolute bottom-[10%] left-[40%] w-[280px] h-[280px] rounded-full bg-fuchsia-700/8 blur-[80px]" />
+      </div>
+
+      <main className="relative z-10 flex flex-col items-center px-4 pt-28 pb-20 min-h-screen">
+        <div className="relative text-center mb-4 max-w-xl">
+
+          {/* Floating plan feature chips */}
+          <div className="hidden lg:block">
+            <div className="absolute -left-40 top-4 animate-float">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-white/40 backdrop-blur-sm whitespace-nowrap">
+                ✓ No credit card
+              </div>
+            </div>
+            <div className="absolute -left-36 top-16 animate-float-rev">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-white/40 backdrop-blur-sm whitespace-nowrap">
+                ⚡ Cancel anytime
+              </div>
+            </div>
+            <div className="absolute -right-36 top-4 animate-float-slow">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-white/40 backdrop-blur-sm whitespace-nowrap">
+                🔒 Secure checkout
+              </div>
+            </div>
+            <div className="absolute -right-32 top-16 animate-float">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-white/40 backdrop-blur-sm whitespace-nowrap">
+                💳 PayPal accepted
+              </div>
+            </div>
+          </div>
+
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-violet-500/30 bg-violet-500/10 text-violet-300 text-xs mb-4">
             Simple pricing
           </div>
@@ -59,7 +92,7 @@ export default function UpgradePage() {
             </span>
           </h1>
           <p className="text-white/50">Start free. No card needed. Cancel anytime.</p>
-        </div>
+        </div>{/* end relative hero */}
 
         {/* Free tier reminder */}
         <div className="flex items-center gap-3 mb-10 px-4 py-2.5 rounded-full border border-white/10 bg-white/5 text-sm text-white/50">

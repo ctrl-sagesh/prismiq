@@ -20,7 +20,7 @@ const actions = [
 const steps = [
   { icon: "📎", title: "Drop anything", desc: "A link, YouTube video, PDF, or image" },
   { icon: "⚡", title: "Pick what you need", desc: "Summary, notes, Q&A, or search" },
-  { icon: "✅", title: "Read the result", desc: "Clear and useful — no filler" },
+  { icon: "✅", title: "Read the result", desc: "Clear and useful, no filler" },
 ];
 
 const works = ["YouTube tutorials and lectures", "Any website or article", "PDF documents", "Screenshots and images", "Text files and notes"];
@@ -95,10 +95,41 @@ export default function Home() {
       <Navbar />
       {modal && <PaywallModal type={modal} onClose={() => setModal(null)} />}
 
-      <main className="flex flex-col items-center px-4 pt-24 pb-20 min-h-screen">
+      {/* Background glow orbs */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-[-15%] left-[-8%] w-[480px] h-[480px] rounded-full bg-violet-600/20 blur-[130px]" />
+        <div className="absolute top-[5%] right-[-10%] w-[380px] h-[380px] rounded-full bg-pink-600/15 blur-[110px]" />
+        <div className="absolute bottom-[15%] left-[35%] w-[320px] h-[320px] rounded-full bg-fuchsia-700/10 blur-[90px]" />
+      </div>
+
+      <main className="relative z-10 flex flex-col items-center px-4 pt-24 pb-20 min-h-screen">
 
         {/* Hero */}
-        <div className="text-center mb-10 max-w-2xl">
+        <div className="relative text-center mb-10 max-w-2xl">
+
+          {/* Floating input-type chips — visible on large screens only */}
+          <div className="hidden lg:block">
+            <div className="absolute -left-36 top-6 animate-float">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-white/40 backdrop-blur-sm whitespace-nowrap">
+                🎬 YouTube
+              </div>
+            </div>
+            <div className="absolute -left-44 top-20 animate-float-rev">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-white/40 backdrop-blur-sm whitespace-nowrap">
+                📄 PDF
+              </div>
+            </div>
+            <div className="absolute -right-36 top-6 animate-float-slow">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-white/40 backdrop-blur-sm whitespace-nowrap">
+                🌐 Website
+              </div>
+            </div>
+            <div className="absolute -right-32 top-20 animate-float">
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-white/40 backdrop-blur-sm whitespace-nowrap">
+                🖼️ Image
+              </div>
+            </div>
+          </div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-violet-500/30 bg-violet-500/10 text-violet-300 text-xs mb-6 font-medium">
             ✨ Free to try. No account needed.
           </div>

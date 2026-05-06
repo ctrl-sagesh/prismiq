@@ -3,19 +3,31 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import Navbar from "@/components/Navbar";
 import ResultDisplay from "@/components/ResultDisplay";
+import FlashcardDisplay from "@/components/FlashcardDisplay";
+import QuizDisplay from "@/components/QuizDisplay";
 import PaywallModal from "@/components/PaywallModal";
 
 type InputType = "url" | "file";
-type Action = "summarize" | "notes" | "qa" | "search";
+type Action = "summarize" | "notes" | "qa" | "search" | "flashcards" | "quiz" | "glossary";
 type SummarizeMode = "brief" | "detailed";
 type ModalType = "signin_required" | "upgrade_required" | null;
 
-const actions = [
-  { id: "summarize" as Action, label: "Summarize", icon: "📋", desc: "Quick overview" },
+interface ChatMessage { role: "user" | "assistant"; content: string; }
+
+const analyzeActions = [
+  { id: "summarize" as Action, label: "Summarize", icon: "📋", desc: "Overview" },
   { id: "notes" as Action, label: "Key Notes", icon: "📝", desc: "Study notes" },
-  { id: "qa" as Action, label: "Q&A", icon: "💡", desc: "Questions & answers" },
-  { id: "search" as Action, label: "Search", icon: "🔍", desc: "Find specific info" },
+  { id: "qa" as Action, label: "Q&A", icon: "💡", desc: "Questions" },
+  { id: "search" as Action, label: "Search", icon: "🔍", desc: "Find info" },
 ];
+
+const studyActions = [
+  { id: "flashcards" as Action, label: "Flashcards", icon: "🃏", desc: "Flip cards" },
+  { id: "quiz" as Action, label: "Quiz", icon: "📊", desc: "Test yourself" },
+  { id: "glossary" as Action, label: "Glossary", icon: "📖", desc: "Key terms" },
+];
+
+const allActions = [...analyzeActions, ...studyActions];
 
 const steps = [
   { icon: "📎", title: "Drop anything", desc: "A link, YouTube video, PDF, or image" },
@@ -43,7 +55,15 @@ export default function Home() {
   const [pageTimer, setPageTimer] = useState("");
   const [dragging, setDragging] = useState(false);
 
-  // Fetch scan status on mount so signed-in users see their count immediately
+  // Chat state
+  const [extractedContent, setExtractedContent] = useState<string | null>(null);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [chatInput, setChatInput] = useState("");
+  const [chatLoading, setChatLoading] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  // Fetch scan status on mount
   useEffect(() => {
     fetch("/api/scan-status")
       .then((r) => r.json())
@@ -57,7 +77,7 @@ export default function Home() {
       .catch(() => {});
   }, []);
 
-  // Live countdown for the main page scan counter
+  // Live countdown for main page
   useEffect(() => {
     if (!resetAt) { setPageTimer(""); return; }
     function tick() {
@@ -66,13 +86,17 @@ export default function Home() {
       const h = Math.floor(diff / (1000 * 60 * 60));
       const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
       const s = Math.floor((diff % (1000 * 60)) / 1000);
-      setPageTimer(`${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`);
+      setPageTimer(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`);
     }
     tick();
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, [resetAt]);
-  const fileRef = useRef<HTMLInputElement>(null);
+
+  // Scroll chat to bottom
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -80,6 +104,14 @@ export default function Home() {
     const dropped = e.dataTransfer.files[0];
     if (dropped) { setFile(dropped); setInputType("file"); }
   }, []);
+
+  const resetForNewInput = () => {
+    setResult(null);
+    setError(null);
+    setExtractedContent(null);
+    setChatMessages([]);
+    setChatInput("");
+  };
 
   const handleSubmit = async () => {
     if (inputType === "url" && !url.trim()) return setError("Please enter a URL");
@@ -89,6 +121,8 @@ export default function Home() {
     setLoading(true);
     setError(null);
     setResult(null);
+    setExtractedContent(null);
+    setChatMessages([]);
 
     const formData = new FormData();
     formData.append("action", action);
@@ -114,7 +148,7 @@ export default function Home() {
       setResult(data.result);
       setScansLeft(data.scansLeft);
       if (data.isSignedIn) setIsSignedIn(true);
-      // scroll to result
+      if (data.extractedContent) setExtractedContent(data.extractedContent);
       setTimeout(() => document.getElementById("result")?.scrollIntoView({ behavior: "smooth" }), 100);
     } catch {
       setError("Request timed out. Try a shorter video or a different URL.");
@@ -123,14 +157,36 @@ export default function Home() {
     }
   };
 
-  const activeAction = actions.find((a) => a.id === action)!;
+  const handleChat = async () => {
+    if (!chatInput.trim() || !extractedContent || chatLoading) return;
+    const question = chatInput.trim();
+    setChatInput("");
+    const newMessages: ChatMessage[] = [...chatMessages, { role: "user", content: question }];
+    setChatMessages(newMessages);
+    setChatLoading(true);
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: extractedContent, question, history: chatMessages }),
+      });
+      const data = await res.json();
+      setChatMessages([...newMessages, { role: "assistant", content: data.answer || data.error }]);
+    } catch {
+      setChatMessages([...newMessages, { role: "assistant", content: "Sorry, something went wrong. Please try again." }]);
+    } finally {
+      setChatLoading(false);
+    }
+  };
+
+  const activeAction = allActions.find((a) => a.id === action)!;
 
   return (
     <>
       <Navbar />
       {modal && <PaywallModal type={modal} onClose={() => setModal(null)} resetAt={resetAt} />}
 
-      {/* Background glow orbs — radial-gradient so edges naturally fade to transparent */}
+      {/* Background glow orbs */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-0 left-0 w-[600px] h-[600px]" style={{ background: "radial-gradient(circle at 30% 30%, rgba(139,92,246,0.18) 0%, transparent 70%)" }} />
         <div className="absolute top-0 right-0 w-[500px] h-[500px]" style={{ background: "radial-gradient(circle at 70% 20%, rgba(236,72,153,0.12) 0%, transparent 70%)" }} />
@@ -141,28 +197,18 @@ export default function Home() {
 
         {/* Hero */}
         <div className="relative text-center mb-10 max-w-2xl">
-
-          {/* Floating input-type chips — visible on large screens only */}
           <div className="hidden lg:block">
             <div className="absolute -left-36 top-6 animate-float">
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-white/40 backdrop-blur-sm whitespace-nowrap">
-                🎬 YouTube
-              </div>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-white/40 backdrop-blur-sm whitespace-nowrap">🎬 YouTube</div>
             </div>
             <div className="absolute -left-44 top-20 animate-float-rev">
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-white/40 backdrop-blur-sm whitespace-nowrap">
-                📄 PDF
-              </div>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-white/40 backdrop-blur-sm whitespace-nowrap">📄 PDF</div>
             </div>
             <div className="absolute -right-36 top-6 animate-float-slow">
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-white/40 backdrop-blur-sm whitespace-nowrap">
-                🌐 Website
-              </div>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-white/40 backdrop-blur-sm whitespace-nowrap">🌐 Website</div>
             </div>
             <div className="absolute -right-32 top-20 animate-float">
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-white/40 backdrop-blur-sm whitespace-nowrap">
-                🖼️ Image
-              </div>
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-white/40 backdrop-blur-sm whitespace-nowrap">🖼️ Image</div>
             </div>
           </div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-violet-500/30 bg-violet-500/10 text-violet-300 text-xs mb-6 font-medium">
@@ -175,7 +221,7 @@ export default function Home() {
             </span>
           </h1>
           <p className="text-white/50 text-lg leading-relaxed max-w-lg mx-auto">
-            Paste a YouTube video, website, PDF or image. Get a clear summary, study notes or Q&A in seconds.
+            Paste a YouTube video, website, PDF or image. Get a clear summary, flashcards, quiz, and more in seconds.
           </p>
         </div>
 
@@ -195,10 +241,10 @@ export default function Home() {
         {/* Main Card */}
         <div className="w-full max-w-2xl rounded-2xl border border-white/10 bg-white/[0.04] p-6 mb-4 shadow-2xl">
 
-          {/* Toggle */}
+          {/* Input toggle */}
           <div className="flex gap-2 mb-5 p-1 rounded-xl bg-white/5 border border-white/10">
             {(["url", "file"] as InputType[]).map((t) => (
-              <button key={t} onClick={() => { setInputType(t); setError(null); setResult(null); setFile(null); setUrl(""); }}
+              <button key={t} onClick={() => { setInputType(t); resetForNewInput(); setFile(null); setUrl(""); }}
                 className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${inputType === t ? "bg-violet-600 text-white shadow" : "text-white/50 hover:text-white"}`}>
                 {t === "url" ? "🔗  Link or YouTube" : "📁  File or Image"}
               </button>
@@ -235,18 +281,35 @@ export default function Home() {
             </div>
           )}
 
-          {/* Actions */}
-          <div className="grid grid-cols-4 gap-2 mt-4">
-            {actions.map((a) => (
-              <button key={a.id} onClick={() => setAction(a.id)}
-                className={`flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl border text-xs transition-all ${action === a.id ? "border-violet-500/60 bg-violet-500/15 text-violet-300" : "border-white/10 bg-white/[0.03] text-white/40 hover:text-white/70 hover:border-white/20"}`}>
-                <span className="text-xl">{a.icon}</span>
-                <span className="font-medium">{a.label}</span>
-              </button>
-            ))}
+          {/* Analyze actions */}
+          <div className="mt-4">
+            <p className="text-[10px] text-white/20 uppercase tracking-widest mb-2 font-medium">Analyze</p>
+            <div className="grid grid-cols-4 gap-2">
+              {analyzeActions.map((a) => (
+                <button key={a.id} onClick={() => setAction(a.id)}
+                  className={`flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl border text-xs transition-all ${action === a.id ? "border-violet-500/60 bg-violet-500/15 text-violet-300" : "border-white/10 bg-white/[0.03] text-white/40 hover:text-white/70 hover:border-white/20"}`}>
+                  <span className="text-xl">{a.icon}</span>
+                  <span className="font-medium">{a.label}</span>
+                </button>
+              ))}
+            </div>
           </div>
 
-          {/* Brief / Detailed toggle for summarize */}
+          {/* Study actions */}
+          <div className="mt-3">
+            <p className="text-[10px] text-white/20 uppercase tracking-widest mb-2 font-medium">Study</p>
+            <div className="grid grid-cols-3 gap-2">
+              {studyActions.map((a) => (
+                <button key={a.id} onClick={() => setAction(a.id)}
+                  className={`flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl border text-xs transition-all ${action === a.id ? "border-pink-500/60 bg-pink-500/15 text-pink-300" : "border-white/10 bg-white/[0.03] text-white/40 hover:text-white/70 hover:border-white/20"}`}>
+                  <span className="text-xl">{a.icon}</span>
+                  <span className="font-medium">{a.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Brief/Detailed for summarize */}
           {action === "summarize" && (
             <div className="flex gap-2 mt-3">
               {(["brief", "detailed"] as SummarizeMode[]).map((mode) => (
@@ -283,7 +346,7 @@ export default function Home() {
             )}
           </button>
 
-          {/* Scan status — shown for signed-in users */}
+          {/* Scan status */}
           {isSignedIn && scansLeft !== null && (
             <div className="mt-3 flex items-center justify-center">
               {scansLeft > 0 ? (
@@ -310,7 +373,7 @@ export default function Home() {
           )}
         </div>
 
-        {/* What works — always visible */}
+        {/* What works */}
         <div className="w-full max-w-2xl mb-8 rounded-2xl border border-white/10 bg-white/[0.02] p-5">
           <p className="text-white/30 text-xs font-semibold uppercase tracking-wider mb-4">What works with Prismiq</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -337,7 +400,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Example output — shown when no result yet */}
+        {/* Example output */}
         {!result && (
           <div className="w-full max-w-2xl mb-8">
             <p className="text-center text-white/20 text-xs uppercase tracking-wider mb-4">Example output</p>
@@ -361,12 +424,71 @@ export default function Home() {
         {/* Result */}
         {result && (
           <div id="result" className="w-full max-w-2xl">
-            <ResultDisplay result={result} action={action} />
+            {action === "flashcards" ? (
+              <FlashcardDisplay result={result} />
+            ) : action === "quiz" ? (
+              <QuizDisplay result={result} />
+            ) : (
+              <ResultDisplay result={result} action={action} />
+            )}
+
+            {/* Chat follow-up — only available when text content was extracted */}
+            {extractedContent && (
+              <div className="mt-6 rounded-2xl border border-white/10 bg-white/[0.03] overflow-hidden">
+                <div className="flex items-center gap-2 px-5 py-3 border-b border-white/8">
+                  <span className="text-sm">💬</span>
+                  <p className="text-white/60 text-sm font-medium">Ask anything about this content</p>
+                  <span className="ml-auto text-[10px] text-white/20 uppercase tracking-wider">Free</span>
+                </div>
+
+                {/* Messages */}
+                {chatMessages.length > 0 && (
+                  <div className="px-5 py-4 space-y-4 max-h-80 overflow-y-auto">
+                    {chatMessages.map((msg, i) => (
+                      <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                        <div className={`max-w-[85%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${msg.role === "user"
+                          ? "bg-violet-600 text-white rounded-br-sm"
+                          : "bg-white/8 text-white/80 border border-white/10 rounded-bl-sm"}`}>
+                          {msg.content}
+                        </div>
+                      </div>
+                    ))}
+                    {chatLoading && (
+                      <div className="flex justify-start">
+                        <div className="bg-white/8 border border-white/10 rounded-2xl rounded-bl-sm px-4 py-2.5 flex gap-1.5 items-center">
+                          <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-bounce" style={{ animationDelay: "0ms" }} />
+                          <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-bounce" style={{ animationDelay: "150ms" }} />
+                          <span className="w-1.5 h-1.5 rounded-full bg-white/40 animate-bounce" style={{ animationDelay: "300ms" }} />
+                        </div>
+                      </div>
+                    )}
+                    <div ref={chatEndRef} />
+                  </div>
+                )}
+
+                {/* Input */}
+                <div className="flex gap-2 p-3 border-t border-white/8">
+                  <input
+                    type="text"
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleChat()}
+                    placeholder="e.g. Can you explain the main argument in simpler terms?"
+                    className="flex-1 px-4 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/25 text-sm outline-none focus:border-violet-500/50 transition-colors"
+                  />
+                  <button
+                    onClick={handleChat}
+                    disabled={chatLoading || !chatInput.trim()}
+                    className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-pink-600 text-white text-sm font-semibold hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-all shrink-0">
+                    Ask
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
-        {/* Social proof */}
-        <div className="text-center mt-2 mb-4">
+        <div className="text-center mt-6 mb-4">
           <p className="text-white/15 text-xs">Trusted by students, researchers and professionals</p>
         </div>
       </main>

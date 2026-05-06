@@ -55,6 +55,8 @@ export default function Home() {
   const [pageTimer, setPageTimer] = useState("");
   const [dragging, setDragging] = useState(false);
 
+  const [scannedUrl, setScannedUrl] = useState<string | undefined>(undefined);
+
   // Chat state
   const [extractedContent, setExtractedContent] = useState<string | null>(null);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
@@ -62,6 +64,13 @@ export default function Home() {
   const [chatLoading, setChatLoading] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // Pre-fill URL from ?url= query param (shareable links)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const shared = params.get("url");
+    if (shared) { setUrl(shared); setInputType("url"); }
+  }, []);
 
   // Fetch scan status on mount
   useEffect(() => {
@@ -115,6 +124,13 @@ export default function Home() {
 
   const handleSubmit = async () => {
     if (inputType === "url" && !url.trim()) return setError("Please enter a URL");
+    if (inputType === "url") {
+      const trimmed = url.trim();
+      const hasProtocol = /^https?:\/\//i.test(trimmed);
+      const looksLikeUrl = /\.[a-z]{2,}/i.test(trimmed);
+      if (!hasProtocol && !looksLikeUrl) return setError("That doesn't look like a valid URL. Try pasting the full link including https://");
+      if (!hasProtocol) setUrl("https://" + trimmed);
+    }
     if (inputType === "file" && !file) return setError("Please select a file");
     if (action === "search" && !searchQuery.trim()) return setError("Please enter what you want to find");
 
@@ -149,6 +165,7 @@ export default function Home() {
       setScansLeft(data.scansLeft);
       if (data.isSignedIn) setIsSignedIn(true);
       if (data.extractedContent) setExtractedContent(data.extractedContent);
+      if (inputType === "url") setScannedUrl(url.trim()); else setScannedUrl(undefined);
       setTimeout(() => document.getElementById("result")?.scrollIntoView({ behavior: "smooth" }), 100);
     } catch {
       setError("Request timed out. Try a shorter video or a different URL.");
@@ -253,10 +270,27 @@ export default function Home() {
 
           {/* URL Input */}
           {inputType === "url" && (
-            <input type="text" value={url} onChange={(e) => setUrl(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
-              placeholder="e.g. https://youtube.com/watch?v=... or any website URL"
-              className="w-full px-4 py-3.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/25 text-sm outline-none focus:border-violet-500/60 transition-colors" />
+            <div>
+              <input type="text" value={url} onChange={(e) => setUrl(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+                placeholder="Paste a YouTube link, website URL, or any article..."
+                className="w-full px-4 py-3.5 rounded-xl bg-white/5 border border-white/10 text-white placeholder-white/25 text-sm outline-none focus:border-violet-500/60 transition-colors" />
+              {!url && (
+                <div className="flex items-center gap-2 mt-2 flex-wrap">
+                  <span className="text-[11px] text-white/20">Try:</span>
+                  {[
+                    { label: "Karpathy on LLMs", url: "https://www.youtube.com/watch?v=zjkBMFhNj_g" },
+                    { label: "Paul Graham Essay", url: "https://paulgraham.com/startupideas.html" },
+                    { label: "Wikipedia: AI", url: "https://en.wikipedia.org/wiki/Artificial_intelligence" },
+                  ].map((ex) => (
+                    <button key={ex.label} onClick={() => setUrl(ex.url)}
+                      className="text-[11px] text-violet-400/70 hover:text-violet-300 border border-violet-500/20 hover:border-violet-500/40 px-2 py-0.5 rounded-full transition-all">
+                      {ex.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           )}
 
           {/* File Drop */}
@@ -429,7 +463,7 @@ export default function Home() {
             ) : action === "quiz" ? (
               <QuizDisplay result={result} />
             ) : (
-              <ResultDisplay result={result} action={action} />
+              <ResultDisplay result={result} action={action} sourceUrl={scannedUrl} />
             )}
 
             {/* Chat follow-up — only available when text content was extracted */}

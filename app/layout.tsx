@@ -16,11 +16,13 @@ export const metadata: Metadata = {
     url: "https://prismiqai.vercel.app",
     siteName: "Prismiq",
     type: "website",
+    images: [{ url: "https://prismiqai.vercel.app/og.png", width: 1200, height: 630, alt: "Prismiq" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Prismiq: Summarize Anything Instantly",
     description: "Paste a YouTube video, website, PDF or image. Get a clear summary, study notes or Q&A in seconds.",
+    images: ["https://prismiqai.vercel.app/og.png"],
   },
 };
 

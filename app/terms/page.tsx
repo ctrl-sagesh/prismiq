@@ -32,7 +32,7 @@ export default function TermsPage() {
 
           <section>
             <h2 className="text-white font-semibold text-base mb-3">3. Paid plans</h2>
-            <p>Paid subscriptions (Starter, Pro, Unlimited) are billed monthly through Lemon Squeezy. You can cancel at any time — your access continues until the end of the billing period. We do not offer partial refunds for unused time, but we will consider refund requests made within 7 days of a charge.</p>
+            <p>Paid subscriptions (Starter, Pro, Unlimited) are billed monthly through Gumroad. You can cancel at any time and your access continues until the end of the billing period. We do not offer partial refunds for unused time, but we will consider refund requests made within 7 days of a charge.</p>
           </section>
 
           <section>

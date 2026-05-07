@@ -3,9 +3,9 @@
 import { signIn } from "next-auth/react";
 import { useEffect, useState } from "react";
 const CHECKOUT = {
-  starter: "https://prismiq.lemonsqueezy.com/checkout/buy/4ab47c49-588f-4cff-8751-744d0097764e",
-  pro: "https://prismiq.lemonsqueezy.com/checkout/buy/4c620875-f1a5-4b0d-a61c-f0f6c1a51c77",
-  unlimited: "https://prismiq.lemonsqueezy.com/checkout/buy/c9a3a007-85d6-4bff-ae0d-fb0fa6406778",
+  starter: "https://itssazzzz.gumroad.com/l/tsamb",
+  pro: "https://itssazzzz.gumroad.com/l/sfrolm",
+  unlimited: "https://itssazzzz.gumroad.com/l/qbxck",
 };
 
 type ModalType = "signin_required" | "upgrade_required";

@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#07070f"/>
+      <stop offset="100%" style="stop-color:#0e0820"/>
+    </linearGradient>
+    <linearGradient id="glow1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#7c3aed;stop-opacity:0.3"/>
+      <stop offset="100%" style="stop-color:#7c3aed;stop-opacity:0"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#a78bfa"/>
+      <stop offset="100%" style="stop-color:#f472b6"/>
+    </linearGradient>
+    <linearGradient id="cardBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.06"/>
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0.02"/>
+    </linearGradient>
+    <filter id="blur1">
+      <feGaussianBlur stdDeviation="80"/>
+    </filter>
+    <filter id="blur2">
+      <feGaussianBlur stdDeviation="60"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1280" height="720" fill="url(#bg)"/>
+
+  <!-- Grid lines -->
+  <g opacity="0.04" stroke="#ffffff" stroke-width="1">
+    <line x1="0" y1="120" x2="1280" y2="120"/>
+    <line x1="0" y1="240" x2="1280" y2="240"/>
+    <line x1="0" y1="360" x2="1280" y2="360"/>
+    <line x1="0" y1="480" x2="1280" y2="480"/>
+    <line x1="0" y1="600" x2="1280" y2="600"/>
+    <line x1="160" y1="0" x2="160" y2="720"/>
+    <line x1="320" y1="0" x2="320" y2="720"/>
+    <line x1="480" y1="0" x2="480" y2="720"/>
+    <line x1="640" y1="0" x2="640" y2="720"/>
+    <line x1="800" y1="0" x2="800" y2="720"/>
+    <line x1="960" y1="0" x2="960" y2="720"/>
+    <line x1="1120" y1="0" x2="1120" y2="720"/>
+  </g>
+
+  <!-- Ambient glow blobs -->
+  <circle cx="200" cy="200" r="300" fill="#7c3aed" opacity="0.15" filter="url(#blur1)"/>
+  <circle cx="1100" cy="500" r="250" fill="#ec4899" opacity="0.10" filter="url(#blur2)"/>
+  <circle cx="700" cy="600" r="200" fill="#7c3aed" opacity="0.08" filter="url(#blur2)"/>
+
+  <!-- Left content -->
+  <!-- Badge -->
+  <rect x="80" y="180" width="140" height="32" rx="16" fill="#7c3aed" opacity="0.2"/>
+  <rect x="80" y="180" width="140" height="32" rx="16" fill="none" stroke="#7c3aed" stroke-width="1" opacity="0.4"/>
+  <text x="150" y="201" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#a78bfa" text-anchor="middle" font-weight="600">STARTER PLAN</text>
+
+  <!-- Product name -->
+  <text x="80" y="290" font-family="system-ui, -apple-system, sans-serif" font-size="72" fill="white" font-weight="800" letter-spacing="-2">Prismiq</text>
+
+  <!-- Tagline -->
+  <text x="80" y="350" font-family="system-ui, -apple-system, sans-serif" font-size="26" fill="white" opacity="0.45" font-weight="400">Summarize anything. Instantly.</text>
+
+  <!-- Accent line -->
+  <rect x="80" y="380" width="200" height="3" rx="2" fill="url(#accent)"/>
+
+  <!-- Features -->
+  <g font-family="system-ui, -apple-system, sans-serif" font-size="18" fill="white" opacity="0.55">
+    <text x="80" y="440">✓  YouTube · Websites · PDFs · Images</text>
+    <text x="80" y="475">✓  Summarize · Study Notes · Q&amp;A</text>
+    <text x="80" y="510">✓  Flashcards &amp; Quiz mode</text>
+  </g>
+
+  <!-- Pricing card -->
+  <rect x="820" y="160" width="380" height="400" rx="24" fill="url(#cardBg)"/>
+  <rect x="820" y="160" width="380" height="400" rx="24" fill="none" stroke="white" stroke-width="1" opacity="0.1"/>
+
+  <!-- Price -->
+  <text x="1010" y="280" font-family="system-ui, -apple-system, sans-serif" font-size="80" fill="white" font-weight="800" text-anchor="middle">$3.99</text>
+  <text x="1010" y="320" font-family="system-ui, -apple-system, sans-serif" font-size="20" fill="white" opacity="0.35" text-anchor="middle" font-weight="400">per month</text>
+
+  <!-- Divider -->
+  <rect x="860" y="355" width="300" height="1" fill="white" opacity="0.08"/>
+
+  <!-- Scan count highlight -->
+  <rect x="900" y="380" width="220" height="48" rx="12" fill="#7c3aed" opacity="0.2"/>
+  <text x="1010" y="410" font-family="system-ui, -apple-system, sans-serif" font-size="20" fill="#a78bfa" text-anchor="middle" font-weight="700">5 scans / day</text>
+
+  <!-- Subscribe hint -->
+  <rect x="860" y="460" width="300" height="56" rx="14" fill="url(#accent)"/>
+  <text x="1010" y="494" font-family="system-ui, -apple-system, sans-serif" font-size="20" fill="white" text-anchor="middle" font-weight="700">Subscribe →</text>
+
+  <!-- Bottom brand -->
+  <text x="80" y="640" font-family="system-ui, -apple-system, sans-serif" font-size="15" fill="white" opacity="0.2" font-weight="400">prismiqai.vercel.app · Powered by Claude AI</text>
+
+  <!-- Ctrl Labs badge -->
+  <text x="1200" y="640" font-family="system-ui, -apple-system, sans-serif" font-size="15" fill="white" opacity="0.2" text-anchor="end">by Ctrl Labs</text>
+</svg>

@@ -3,9 +3,9 @@
 import { signIn } from "next-auth/react";
 import { useEffect, useState } from "react";
 const CHECKOUT = {
-  starter: "https://itssazzzz.gumroad.com/l/tsamb",
-  pro: "https://itssazzzz.gumroad.com/l/sfrolm",
-  unlimited: "https://itssazzzz.gumroad.com/l/qbxck",
+  starter: "https://ctrlabs.gumroad.com/l/tsamb",
+  pro: "https://ctrlabs.gumroad.com/l/sfrolm",
+  unlimited: "https://ctrlabs.gumroad.com/l/qbxck",
 };
 
 type ModalType = "signin_required" | "upgrade_required";

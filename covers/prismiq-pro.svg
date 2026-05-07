@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#07070f"/>
+      <stop offset="100%" style="stop-color:#120820"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#a78bfa"/>
+      <stop offset="100%" style="stop-color:#f472b6"/>
+    </linearGradient>
+    <linearGradient id="cardBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#7c3aed;stop-opacity:0.18"/>
+      <stop offset="100%" style="stop-color:#ec4899;stop-opacity:0.08"/>
+    </linearGradient>
+    <linearGradient id="btnGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#7c3aed"/>
+      <stop offset="100%" style="stop-color:#ec4899"/>
+    </linearGradient>
+    <filter id="blur1"><feGaussianBlur stdDeviation="80"/></filter>
+    <filter id="blur2"><feGaussianBlur stdDeviation="60"/></filter>
+    <filter id="glow"><feGaussianBlur stdDeviation="20" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1280" height="720" fill="url(#bg)"/>
+
+  <!-- Grid -->
+  <g opacity="0.04" stroke="#ffffff" stroke-width="1">
+    <line x1="0" y1="120" x2="1280" y2="120"/>
+    <line x1="0" y1="240" x2="1280" y2="240"/>
+    <line x1="0" y1="360" x2="1280" y2="360"/>
+    <line x1="0" y1="480" x2="1280" y2="480"/>
+    <line x1="0" y1="600" x2="1280" y2="600"/>
+    <line x1="160" y1="0" x2="160" y2="720"/>
+    <line x1="320" y1="0" x2="320" y2="720"/>
+    <line x1="480" y1="0" x2="480" y2="720"/>
+    <line x1="640" y1="0" x2="640" y2="720"/>
+    <line x1="800" y1="0" x2="800" y2="720"/>
+    <line x1="960" y1="0" x2="960" y2="720"/>
+    <line x1="1120" y1="0" x2="1120" y2="720"/>
+  </g>
+
+  <!-- Glow blobs -->
+  <circle cx="300" cy="150" r="350" fill="#7c3aed" opacity="0.18" filter="url(#blur1)"/>
+  <circle cx="1050" cy="550" r="280" fill="#ec4899" opacity="0.15" filter="url(#blur2)"/>
+  <circle cx="640" cy="360" r="200" fill="#7c3aed" opacity="0.06" filter="url(#blur1)"/>
+
+  <!-- Most popular ribbon -->
+  <rect x="80" y="160" width="200" height="36" rx="18" fill="url(#btnGrad)"/>
+  <text x="180" y="184" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="white" text-anchor="middle" font-weight="700" letter-spacing="1">★ MOST POPULAR</text>
+
+  <!-- Product name -->
+  <text x="80" y="295" font-family="system-ui, -apple-system, sans-serif" font-size="72" fill="white" font-weight="800" letter-spacing="-2">Prismiq</text>
+  <text x="80" y="370" font-family="system-ui, -apple-system, sans-serif" font-size="72" fill="transparent" font-weight="800" letter-spacing="-2">
+    <tspan fill="url(#accent)">Pro</tspan>
+  </text>
+
+  <!-- Tagline -->
+  <text x="80" y="415" font-family="system-ui, -apple-system, sans-serif" font-size="22" fill="white" opacity="0.45">Built for students &amp; researchers</text>
+
+  <!-- Accent line -->
+  <rect x="80" y="440" width="240" height="3" rx="2" fill="url(#accent)"/>
+
+  <!-- Features -->
+  <g font-family="system-ui, -apple-system, sans-serif" font-size="17" fill="white" opacity="0.6">
+    <text x="80" y="495">✓  Everything in Starter</text>
+    <text x="80" y="525">✓  AI Chat with your content</text>
+    <text x="80" y="555">✓  Glossary generation</text>
+    <text x="80" y="585">✓  Priority processing</text>
+  </g>
+
+  <!-- Card with violet glow border -->
+  <rect x="815" y="150" width="390" height="420" rx="24" fill="url(#cardBg)"/>
+  <rect x="815" y="150" width="390" height="420" rx="24" fill="none" stroke="url(#accent)" stroke-width="1.5" opacity="0.5"/>
+
+  <!-- Price -->
+  <text x="1010" y="280" font-family="system-ui, -apple-system, sans-serif" font-size="80" fill="white" font-weight="800" text-anchor="middle">$8.99</text>
+  <text x="1010" y="322" font-family="system-ui, -apple-system, sans-serif" font-size="20" fill="white" opacity="0.35" text-anchor="middle">per month</text>
+
+  <!-- Divider -->
+  <rect x="855" y="358" width="310" height="1" fill="url(#accent)" opacity="0.2"/>
+
+  <!-- Scan badge -->
+  <rect x="890" y="378" width="240" height="50" rx="12" fill="#7c3aed" opacity="0.25"/>
+  <rect x="890" y="378" width="240" height="50" rx="12" fill="none" stroke="#a78bfa" stroke-width="1" opacity="0.3"/>
+  <text x="1010" y="409" font-family="system-ui, -apple-system, sans-serif" font-size="20" fill="#c4b5fd" text-anchor="middle" font-weight="700">20 scans / day</text>
+
+  <!-- CTA button -->
+  <rect x="855" y="460" width="310" height="60" rx="14" fill="url(#btnGrad)"/>
+  <text x="1010" y="497" font-family="system-ui, -apple-system, sans-serif" font-size="20" fill="white" text-anchor="middle" font-weight="700">Subscribe →</text>
+
+  <!-- Savings note -->
+  <text x="1010" y="545" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="white" opacity="0.25" text-anchor="middle">Cancel anytime · No contracts</text>
+
+  <!-- Bottom brand -->
+  <text x="80" y="660" font-family="system-ui, -apple-system, sans-serif" font-size="15" fill="white" opacity="0.2">prismiqai.vercel.app · Powered by Claude AI</text>
+  <text x="1200" y="660" font-family="system-ui, -apple-system, sans-serif" font-size="15" fill="white" opacity="0.2" text-anchor="end">by Ctrl Labs</text>
+</svg>

@@ -5,7 +5,15 @@ const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 export type Action = "summarize" | "notes" | "qa" | "search" | "flashcards" | "quiz" | "glossary";
 export type SummarizeMode = "brief" | "detailed";
 
-const NO_BULLETS = `IMPORTANT: Do NOT use bullet points, dashes, or hyphens at the start of lines. Do NOT use markdown symbols like *, -, or • as list markers. Write everything in natural flowing paragraphs like a human would write. Only use numbered lists if absolutely necessary for steps.`;
+const NO_BULLETS = `CRITICAL WRITING RULES — follow all of these exactly:
+- Write like a knowledgeable human, not an AI assistant.
+- Do NOT start lines with dashes, hyphens, asterisks, bullets, or any list markers.
+- Do NOT use em-dashes (—) anywhere.
+- Do NOT use filler phrases like "In conclusion", "It is worth noting", "It is important to", "Delve into", "Comprehensive", "Leverage", "Furthermore", "Moreover", "Additionally" at the start of sentences.
+- Do NOT start a response with "I" or "This".
+- Write in full, natural paragraphs. Vary sentence length. Sound like a smart person explaining something to a friend.
+- Use ## headings for major topics. Use ### for subtopics. Never use # (H1).
+- Only use numbered lists for actual step-by-step sequences.`;
 
 export async function processWithClaude(
   content: string,

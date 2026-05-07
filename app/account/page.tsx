@@ -113,7 +113,7 @@ export default function AccountPage() {
                 <div className="flex items-center justify-between mb-3">
                   <p className="text-white font-semibold text-sm">Scan usage</p>
                   <p className="text-white/40 text-xs">
-                    {data.plan === "free" ? "resets every 24 hours" : "resets monthly"}
+                    resets every 24 hours
                   </p>
                 </div>
 
@@ -158,7 +158,7 @@ export default function AccountPage() {
               {data.plan === "free" ? (
                 <div className="rounded-2xl border border-violet-500/20 bg-violet-500/5 p-5 mb-4">
                   <p className="text-white font-semibold text-sm mb-1">Upgrade for more scans</p>
-                  <p className="text-white/40 text-xs mb-4">Get 25, 100 or unlimited scans per month. Cancel anytime.</p>
+                  <p className="text-white/40 text-xs mb-4">Get 5, 20 or unlimited scans per day. Cancel anytime.</p>
                   <Link href="/upgrade"
                     className="inline-block px-5 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-pink-600 text-white text-sm font-semibold hover:opacity-90 transition-opacity">
                     See plans

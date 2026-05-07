@@ -15,18 +15,14 @@ export async function GET() {
   const limit = PLAN_LIMITS[plan];
   const scansUsed = user.scans_used || 0;
 
-  // For free users: compute resetAt from period_start
+  // All plans use the same 24-hour rolling window via period_start
   let resetAt: string | null = null;
-  if (plan === "free" && user.period_start) {
+  if (user.period_start) {
     const periodStart = new Date(user.period_start);
     const hoursSince = (Date.now() - periodStart.getTime()) / (1000 * 60 * 60);
     if (hoursSince < 24) {
       resetAt = new Date(periodStart.getTime() + 24 * 60 * 60 * 1000).toISOString();
     }
-  }
-  // For paid users: reset is monthly
-  if (plan !== "free" && user.scans_reset_at) {
-    resetAt = new Date(new Date(user.scans_reset_at).getTime() + 30 * 24 * 60 * 60 * 1000).toISOString();
   }
 
   return NextResponse.json({

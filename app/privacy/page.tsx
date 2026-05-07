@@ -22,7 +22,7 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="text-white font-semibold text-base mb-3">1. What we collect</h2>
-            <p>When you sign in with Google, we receive your name, email address, and profile picture. We store these to manage your account and track your scan usage. We do not collect payment card details — all payments are processed securely by Lemon Squeezy.</p>
+            <p>When you sign in with Google, we receive your name, email address, and profile picture. We store these to manage your account and track your scan usage. We do not collect payment card details — all payments are processed securely by Gumroad.</p>
           </section>
 
           <section>
@@ -55,7 +55,7 @@ export default function PrivacyPage() {
               {[
                 "Google OAuth — for sign-in only. We do not access your Google Drive, Gmail, or any other Google data.",
                 "Supabase — stores your account data (name, email, plan, scan count) in a secure database.",
-                "Lemon Squeezy — processes payments. Your payment details go directly to Lemon Squeezy, never to us.",
+                "Gumroad — processes payments. Your payment details go directly to Gumroad, never to us.",
                 "Anthropic — processes the content you submit to generate summaries. Subject to Anthropic's privacy policy.",
               ].map(item => (
                 <li key={item} className="flex gap-2"><span className="text-violet-400 shrink-0">·</span>{item}</li>

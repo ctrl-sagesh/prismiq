@@ -11,6 +11,10 @@ export default function ResultDisplay({ result, action, sourceUrl }: { result: s
     notes: "Study Notes",
     qa: "Questions & Answers",
     search: "Search Results",
+    glossary: "Glossary",
+    chat: "AI Chat",
+    flashcards: "Flashcards",
+    quiz: "Quiz",
   };
 
   const handleCopy = () => {

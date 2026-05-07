@@ -10,6 +10,13 @@ const geist = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Prismiq: Summarize YouTube, PDFs and Websites Instantly",
   description: "Paste any YouTube video, website, PDF or image and get a clear summary, study notes or Q&A in seconds. Free to try, no account needed.",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
   openGraph: {
     title: "Prismiq: Summarize Anything Instantly",
     description: "Paste a YouTube video, website, PDF or image. Get a clear summary, study notes or Q&A in seconds.",

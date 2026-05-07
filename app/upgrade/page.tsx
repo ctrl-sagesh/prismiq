@@ -4,9 +4,9 @@ import Navbar from "@/components/Navbar";
 import { useState } from "react";
 
 const CHECKOUT = {
-  starter: "https://ctrlabs.gumroad.com/l/tsamb",
-  pro: "https://ctrlabs.gumroad.com/l/sfrolm",
-  unlimited: "https://ctrlabs.gumroad.com/l/qbxck",
+  starter: "https://ctrllabs.gumroad.com/l/tsamb",
+  pro: "https://ctrllabs.gumroad.com/l/sfrolm",
+  unlimited: "https://ctrllabs.gumroad.com/l/qbxck",
 };
 
 const plans = [

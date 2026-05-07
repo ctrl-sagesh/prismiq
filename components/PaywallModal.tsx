@@ -3,9 +3,9 @@
 import { signIn } from "next-auth/react";
 import { useEffect, useState } from "react";
 const CHECKOUT = {
-  starter: "https://ctrlabs.gumroad.com/l/tsamb",
-  pro: "https://ctrlabs.gumroad.com/l/sfrolm",
-  unlimited: "https://ctrlabs.gumroad.com/l/qbxck",
+  starter: "https://ctrllabs.gumroad.com/l/tsamb",
+  pro: "https://ctrllabs.gumroad.com/l/sfrolm",
+  unlimited: "https://ctrllabs.gumroad.com/l/qbxck",
 };
 
 type ModalType = "signin_required" | "upgrade_required";
@@ -108,7 +108,7 @@ export default function PaywallModal({
             className="flex items-center gap-4 px-4 py-3.5 rounded-xl border border-white/10 bg-white/[0.04] hover:border-white/20 hover:bg-white/[0.07] transition-all group">
             <div className="flex-1 min-w-0">
               <p className="text-white/70 text-sm font-semibold">Starter</p>
-              <p className="text-violet-300/70 text-xs mt-0.5">25 scans / month</p>
+              <p className="text-violet-300/70 text-xs mt-0.5">5 scans / day · 45-min videos</p>
             </div>
             <p className="text-white font-bold text-base shrink-0">$3.99<span className="text-xs font-normal text-white/40"> /mo</span></p>
             <span className="text-white/30 group-hover:text-white/60 transition-colors text-sm">→</span>
@@ -122,7 +122,7 @@ export default function PaywallModal({
             </div>
             <div className="flex-1 min-w-0 mt-0.5">
               <p className="text-violet-200 text-sm font-semibold">Pro</p>
-              <p className="text-violet-300/70 text-xs mt-0.5">100 scans / month</p>
+              <p className="text-violet-300/70 text-xs mt-0.5">20 scans / day · 3-hour videos</p>
             </div>
             <p className="text-white font-bold text-base shrink-0">$8.99<span className="text-xs font-normal text-white/40">/mo</span></p>
             <span className="text-violet-300 group-hover:text-violet-100 transition-colors text-sm">→</span>

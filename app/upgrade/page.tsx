@@ -18,11 +18,13 @@ const plans = [
     tagline: "Perfect for casual learners",
     badge: null,
     scans: "5 scans / day",
+    videoLimit: "Up to 45-min videos",
     color: "from-slate-500/20 to-slate-600/10",
     border: "border-white/10",
     glow: "",
     features: [
-      "YouTube, websites, PDFs & images",
+      "YouTube videos up to 45 minutes",
+      "Websites, PDFs & images",
       "Summarize & Key Notes",
       "Q&A generation",
       "Flashcards & Quiz mode",
@@ -41,14 +43,15 @@ const plans = [
     tagline: "Built for students & researchers",
     badge: "MOST POPULAR",
     scans: "20 scans / day",
+    videoLimit: "Up to 3-hour videos",
     color: "from-violet-600/20 to-pink-600/10",
     border: "border-violet-500/40",
     glow: "shadow-[0_0_60px_-10px_rgba(139,92,246,0.4)]",
     features: [
+      "YouTube videos up to 3 hours",
       "Everything in Starter",
       "Glossary generation",
       "AI Chat with your content",
-      "Longer docs & videos",
       "Priority processing",
     ],
     cta: "Get Pro",
@@ -64,13 +67,14 @@ const plans = [
     tagline: "For power users & teams",
     badge: null,
     scans: "Unlimited scans",
+    videoLimit: "No video length limit",
     color: "from-amber-500/10 to-orange-500/5",
     border: "border-amber-500/20",
     glow: "",
     features: [
+      "YouTube videos of any length",
       "Everything in Pro",
       "No scan limits, ever",
-      "Bulk processing",
       "Highest priority queue",
       "Priority support",
     ],
@@ -86,7 +90,8 @@ const faqs = [
   { q: "Can I cancel anytime?", a: "Yes — cancel in one click, no questions asked, no hidden fees." },
   { q: "What counts as one scan?", a: "Processing any link, YouTube video, PDF, or image once = one scan." },
   { q: "What payment methods are accepted?", a: "All major credit cards and PayPal via Gumroad's secure checkout." },
-  { q: "When do my scans reset?", a: "Free plan resets every 24 hours. Paid plans reset daily at the start of your billing period." },
+  { q: "When do my scans reset?", a: "All plans use a rolling 24-hour window. Your counter resets exactly 24 hours after your first scan of the day — not at midnight." },
+  { q: "What's the video length limit?", a: "Free: up to 20 minutes. Starter: up to 45 minutes. Pro: up to 3 hours. Unlimited: no limit at all. If your video exceeds your plan's limit, you'll see a clear message with upgrade options." },
 ];
 
 export default function UpgradePage() {
@@ -168,6 +173,12 @@ export default function UpgradePage() {
                   <span className="text-white/30 mb-1.5 text-sm">{plan.period}</span>
                 </div>
                 <p className="text-white/40 text-sm">{plan.tagline}</p>
+
+                {/* Video length badge */}
+                <div className={`mt-3 inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg ${plan.highlight ? "bg-violet-500/10 border border-violet-500/20 text-violet-300" : "bg-white/[0.04] border border-white/10 text-white/35"}`}>
+                  <span>▶</span>
+                  <span>{plan.videoLimit}</span>
+                </div>
               </div>
 
               {/* Divider */}
@@ -215,8 +226,10 @@ export default function UpgradePage() {
               <tbody>
                 {[
                   ["Daily scans", "4", "5", "20", "∞"],
-                  ["YouTube summarization", "✓", "✓", "✓", "✓"],
-                  ["Websites & PDFs", "✓", "✓", "✓", "✓"],
+                  ["Max YouTube video length", "20 min", "45 min", "3 hours", "∞"],
+                  ["PDF & file size", "Up to 5 MB", "Up to 5 MB", "Up to 5 MB", "Up to 5 MB"],
+                  ["Supported file types", "PDF, JPG, PNG, TXT", "PDF, JPG, PNG, TXT", "PDF, JPG, PNG, TXT", "PDF, JPG, PNG, TXT"],
+                  ["Websites & articles", "✓", "✓", "✓", "✓"],
                   ["Image analysis", "✓", "✓", "✓", "✓"],
                   ["Study Notes & Q&A", "✓", "✓", "✓", "✓"],
                   ["Flashcards & Quiz", "—", "✓", "✓", "✓"],

@@ -200,7 +200,7 @@ function getVideoTypeError(playerResponse: PlayerResponse | null, title: string)
   return null;
 }
 
-export async function getYoutubeTranscript(url: string): Promise<string> {
+export async function getYoutubeTranscript(url: string, maxMinutes?: number): Promise<string> {
   const videoId = extractVideoId(url);
   if (!videoId) throw new Error("Could not extract a video ID from this URL. Make sure it's a valid YouTube link.");
 
@@ -223,6 +223,23 @@ export async function getYoutubeTranscript(url: string): Promise<string> {
   const playerResponse = html ? extractPlayerResponse(html) : null;
   const typeError = getVideoTypeError(playerResponse, title);
   if (typeError) throw new Error(typeError);
+
+  // Enforce per-plan video length limit
+  if (maxMinutes) {
+    const rawSecs = parseInt(playerResponse?.videoDetails?.lengthSeconds ?? "0", 10);
+    if (rawSecs > 0 && rawSecs > maxMinutes * 60) {
+      const videoMins = Math.round(rawSecs / 60);
+      const upgradeHint =
+        maxMinutes <= 20
+          ? "Upgrade to Starter (45 min) or Pro (3 hours) for longer videos."
+          : maxMinutes <= 45
+          ? "Upgrade to Pro for videos up to 3 hours."
+          : "Upgrade to Unlimited for videos of any length.";
+      throw new Error(
+        `This video is ${videoMins} minutes long but your plan supports up to ${maxMinutes} minutes. ${upgradeHint}`
+      );
+    }
+  }
 
   // Try caption transcript from the watch page HTML
   if (html && playerResponse) {

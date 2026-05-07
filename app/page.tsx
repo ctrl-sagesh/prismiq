@@ -407,6 +407,82 @@ export default function Home() {
           )}
         </div>
 
+        {/* Requirements & limits info */}
+        <details className="w-full max-w-2xl mb-4 group rounded-2xl border border-white/10 bg-white/[0.02] overflow-hidden">
+          <summary className="flex items-center justify-between px-5 py-3.5 cursor-pointer select-none list-none">
+            <div className="flex items-center gap-2">
+              <span className="text-white/40 text-sm">ℹ️</span>
+              <span className="text-white/50 text-xs font-semibold uppercase tracking-wider">Requirements &amp; plan limits</span>
+            </div>
+            <span className="text-white/25 text-xs group-open:rotate-180 transition-transform duration-200 inline-block">▾</span>
+          </summary>
+
+          <div className="px-5 pb-5 pt-1 space-y-5">
+            {/* Supported formats */}
+            <div>
+              <p className="text-white/25 text-[10px] uppercase tracking-wider font-semibold mb-2.5">Supported formats</p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {[
+                  { icon: "▶", label: "YouTube", detail: "Any public video" },
+                  { icon: "🌐", label: "Website", detail: "Any article / page" },
+                  { icon: "📄", label: "PDF", detail: "Up to 5 MB" },
+                  { icon: "🖼️", label: "Image", detail: "JPG, PNG, GIF, WebP" },
+                ].map(f => (
+                  <div key={f.label} className="rounded-xl border border-white/8 bg-white/[0.03] px-3 py-2.5 flex flex-col gap-0.5">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-sm">{f.icon}</span>
+                      <span className="text-white/70 text-xs font-semibold">{f.label}</span>
+                    </div>
+                    <span className="text-white/30 text-[11px]">{f.detail}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Per-plan limits table */}
+            <div>
+              <p className="text-white/25 text-[10px] uppercase tracking-wider font-semibold mb-2.5">Limits by plan</p>
+              <div className="rounded-xl border border-white/8 overflow-hidden text-xs">
+                <div className="grid grid-cols-5 bg-white/[0.03] border-b border-white/8">
+                  <div className="px-3 py-2 text-white/25 font-medium"></div>
+                  {["Free", "Starter", "Pro", "Unlimited"].map(p => (
+                    <div key={p} className={`px-3 py-2 text-center font-semibold ${p === "Pro" ? "text-violet-300" : p === "Unlimited" ? "text-amber-300" : "text-white/40"}`}>{p}</div>
+                  ))}
+                </div>
+                {[
+                  { label: "Scans / day", vals: ["4", "5", "20", "∞"] },
+                  { label: "YouTube length", vals: ["20 min", "45 min", "3 hrs", "∞"] },
+                  { label: "PDF size", vals: ["5 MB", "5 MB", "5 MB", "5 MB"] },
+                  { label: "Price", vals: ["Free", "$3.99/mo", "$8.99/mo", "$15.99/mo"] },
+                ].map((row, i) => (
+                  <div key={row.label} className={`grid grid-cols-5 ${i % 2 === 0 ? "" : "bg-white/[0.01]"} border-b border-white/5 last:border-0`}>
+                    <div className="px-3 py-2.5 text-white/35 font-medium">{row.label}</div>
+                    {row.vals.map((v, j) => (
+                      <div key={j} className={`px-3 py-2.5 text-center ${j === 2 ? "text-violet-300 font-semibold" : j === 3 ? "text-amber-300 font-semibold" : "text-white/45"}`}>{v}</div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+              <p className="text-white/20 text-[10px] mt-2">
+                Video limit enforced at scan time. Exceeding your plan limit shows a clear upgrade message.{" "}
+                <a href="/upgrade" className="text-violet-400 hover:underline">See all plan features →</a>
+              </p>
+            </div>
+
+            {/* What doesn't work */}
+            <div>
+              <p className="text-white/25 text-[10px] uppercase tracking-wider font-semibold mb-2">Not supported</p>
+              <div className="flex flex-wrap gap-2">
+                {doesnt.map(d => (
+                  <span key={d} className="flex items-center gap-1 text-[11px] text-white/30 border border-white/8 rounded-full px-2.5 py-1">
+                    <span className="text-orange-400/50">✕</span>{d}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </details>
+
         {/* What works */}
         <div className="w-full max-w-2xl mb-8 rounded-2xl border border-white/10 bg-white/[0.02] p-5">
           <p className="text-white/30 text-xs font-semibold uppercase tracking-wider mb-4">What works with Prismiq</p>

@@ -5,7 +5,7 @@ import { processWithClaude, processImageWithClaude, Action } from "@/lib/claude"
 import { scrapeUrl } from "@/lib/scraper";
 import { getYoutubeTranscript } from "@/lib/youtube";
 import { parsePdf } from "@/lib/pdfParser";
-import { checkUserCanScan, incrementUserScans } from "@/lib/supabase";
+import { checkUserCanScan, incrementUserScans, PLAN_VIDEO_LIMITS, Plan } from "@/lib/supabase";
 import { SummarizeMode } from "@/lib/claude";
 
 export const maxDuration = 120;
@@ -20,15 +20,18 @@ function isUserError(message: string) {
   return message.includes("caption") || message.includes("transcript")
     || message.includes("live stream") || message.includes("upcoming")
     || message.includes("private") || message.includes("age-restricted")
-    || message.includes("Could not read") || message.includes("Could not extract");
+    || message.includes("Could not read") || message.includes("Could not extract")
+    || message.includes("minutes long") || message.includes("plan supports up to");
 }
 
-async function extractContent(formData: FormData): Promise<{ content: string; isImage: boolean; base64?: string; mediaType?: string }> {
+async function extractContent(formData: FormData, maxVideoMinutes: number): Promise<{ content: string; isImage: boolean; base64?: string; mediaType?: string }> {
   const inputType = formData.get("inputType") as string;
 
   if (inputType === "url") {
     const url = formData.get("url") as string;
-    const content = isYoutubeUrl(url) ? await getYoutubeTranscript(url) : await scrapeUrl(url);
+    const content = isYoutubeUrl(url)
+      ? await getYoutubeTranscript(url, maxVideoMinutes)
+      : await scrapeUrl(url);
     return { content, isImage: false };
   }
 
@@ -59,7 +62,7 @@ export async function POST(req: NextRequest) {
   const cookieStore = await cookies();
 
   if (session?.user?.email) {
-    const { allowed, scansLeft, resetAt } = await checkUserCanScan(session.user.email);
+    const { allowed, scansLeft, resetAt, plan } = await checkUserCanScan(session.user.email);
     if (!allowed) {
       return NextResponse.json({ error: "upgrade_required", resetAt }, { status: 429 });
     }
@@ -70,7 +73,8 @@ export async function POST(req: NextRequest) {
       const searchQuery = formData.get("searchQuery") as string | undefined;
       const summarizeMode = (formData.get("summarizeMode") as SummarizeMode) || "detailed";
 
-      const { content, isImage, base64, mediaType } = await extractContent(formData);
+      const maxVideoMinutes = PLAN_VIDEO_LIMITS[plan as Plan] ?? PLAN_VIDEO_LIMITS["free"];
+      const { content, isImage, base64, mediaType } = await extractContent(formData, maxVideoMinutes);
 
       let result = "";
       if (isImage && base64 && mediaType) {
@@ -105,7 +109,7 @@ export async function POST(req: NextRequest) {
       const searchQuery = formData.get("searchQuery") as string | undefined;
       const summarizeMode = (formData.get("summarizeMode") as SummarizeMode) || "detailed";
 
-      const { content, isImage, base64, mediaType } = await extractContent(formData);
+      const { content, isImage, base64, mediaType } = await extractContent(formData, PLAN_VIDEO_LIMITS["free"]);
 
       let result = "";
       if (isImage && base64 && mediaType) {

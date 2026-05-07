@@ -14,6 +14,14 @@ export const PLAN_LIMITS: Record<Plan, number> = {
   unlimited: 999999,
 };
 
+// Max YouTube video length allowed per plan (in minutes)
+export const PLAN_VIDEO_LIMITS: Record<Plan, number> = {
+  free: 20,       // 20 minutes
+  starter: 45,    // 45 minutes
+  pro: 180,       // 3 hours
+  unlimited: 9999, // effectively no limit
+};
+
 export async function getOrCreateUser(email: string, name?: string, image?: string) {
   const { data, error } = await supabase
     .from("users")
@@ -49,9 +57,9 @@ export async function incrementUserScans(email: string) {
 
 export async function checkUserCanScan(
   email: string
-): Promise<{ allowed: boolean; scansLeft: number; resetAt?: string }> {
+): Promise<{ allowed: boolean; scansLeft: number; resetAt?: string; plan: Plan }> {
   const user = await getUserByEmail(email);
-  if (!user) return { allowed: false, scansLeft: 0 };
+  if (!user) return { allowed: false, scansLeft: 0, plan: "free" };
 
   const plan: Plan = user.plan || "free";
   const limit = PLAN_LIMITS[plan];
@@ -65,16 +73,16 @@ export async function checkUserCanScan(
     if (hoursSince >= 24) {
       // 24h window expired — reset fully regardless of how many scans were left
       await supabase.from("users").update({ scans_used: 0, period_start: null }).eq("email", email);
-      return { allowed: true, scansLeft: limit };
+      return { allowed: true, scansLeft: limit, plan };
     }
 
     // Still within window
     const scansLeft = Math.max(0, limit - scansUsed);
     if (scansLeft === 0) {
       const resetAt = new Date(periodStart.getTime() + 24 * 60 * 60 * 1000).toISOString();
-      return { allowed: false, scansLeft: 0, resetAt };
+      return { allowed: false, scansLeft: 0, resetAt, plan };
     }
-    return { allowed: true, scansLeft };
+    return { allowed: true, scansLeft, plan };
 
   } else {
     // No active window yet
@@ -83,8 +91,8 @@ export async function checkUserCanScan(
       const now = new Date();
       await supabase.from("users").update({ period_start: now.toISOString() }).eq("email", email);
       const resetAt = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
-      return { allowed: false, scansLeft: 0, resetAt };
+      return { allowed: false, scansLeft: 0, resetAt, plan };
     }
-    return { allowed: true, scansLeft: limit - scansUsed };
+    return { allowed: true, scansLeft: limit - scansUsed, plan };
   }
 }

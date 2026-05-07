@@ -8,9 +8,9 @@ export const supabase = createClient(
 export type Plan = "free" | "starter" | "pro" | "unlimited";
 
 export const PLAN_LIMITS: Record<Plan, number> = {
-  free: 4,       // per 24-hour window
-  starter: 25,   // per month
-  pro: 100,      // per month
+  free: 4,        // per 24-hour window
+  starter: 5,     // per 24-hour window
+  pro: 20,        // per 24-hour window
   unlimited: 999999,
 };
 
@@ -38,25 +38,9 @@ export async function incrementUserScans(email: string) {
   const user = await getUserByEmail(email);
   if (!user) return;
 
-  const plan: Plan = user.plan || "free";
-  const isMonthlyPlan = plan !== "free";
-
-  if (isMonthlyPlan) {
-    // Reset monthly scans if it's been 30+ days
-    const resetAt = new Date(user.scans_reset_at);
-    const daysSinceReset = (Date.now() - resetAt.getTime()) / (1000 * 60 * 60 * 24);
-    if (daysSinceReset >= 30) {
-      await supabase
-        .from("users")
-        .update({ scans_used: 1, scans_reset_at: new Date().toISOString() })
-        .eq("email", email);
-      return;
-    }
-  }
-
-  // For free plan: set period_start when the first scan of this 24h window happens
+  // All plans: set period_start on first scan of the 24h window
   const updates: Record<string, unknown> = { scans_used: (user.scans_used || 0) + 1 };
-  if (!isMonthlyPlan && !user.period_start) {
+  if (!user.period_start) {
     updates.period_start = new Date().toISOString();
   }
 
@@ -71,47 +55,36 @@ export async function checkUserCanScan(
 
   const plan: Plan = user.plan || "free";
   const limit = PLAN_LIMITS[plan];
-  const isFreePlan = plan === "free";
+  const scansUsed = user.scans_used || 0;
 
-  let scansUsed = user.scans_used || 0;
+  // All plans use the same 24-hour rolling window via period_start
+  if (user.period_start) {
+    const periodStart = new Date(user.period_start);
+    const hoursSince = (Date.now() - periodStart.getTime()) / (1000 * 60 * 60);
 
-  if (isFreePlan) {
-    if (user.period_start) {
-      const periodStart = new Date(user.period_start);
-      const hoursSincePeriod = (Date.now() - periodStart.getTime()) / (1000 * 60 * 60);
-
-      if (hoursSincePeriod >= 24) {
-        // Period expired — reset and allow
-        await supabase.from("users").update({ scans_used: 0, period_start: null }).eq("email", email);
-        return { allowed: true, scansLeft: limit };
-      }
-
-      // Still within the 24h window
-      const scansLeft = Math.max(0, limit - scansUsed);
-      if (scansLeft === 0) {
-        const resetAt = new Date(periodStart.getTime() + 24 * 60 * 60 * 1000).toISOString();
-        return { allowed: false, scansLeft: 0, resetAt };
-      }
-      return { allowed: true, scansLeft };
-
-    } else {
-      // No period_start yet
-      if (scansUsed >= limit) {
-        // User exhausted scans before this feature existed — start the 24h clock now
-        const now = new Date();
-        await supabase.from("users").update({ period_start: now.toISOString() }).eq("email", email);
-        const resetAt = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
-        return { allowed: false, scansLeft: 0, resetAt };
-      }
-      return { allowed: true, scansLeft: limit - scansUsed };
+    if (hoursSince >= 24) {
+      // 24h window expired — reset fully regardless of how many scans were left
+      await supabase.from("users").update({ scans_used: 0, period_start: null }).eq("email", email);
+      return { allowed: true, scansLeft: limit };
     }
 
-  } else {
-    // Monthly reset for paid plans
-    const resetAt = new Date(user.scans_reset_at);
-    const daysSinceReset = (Date.now() - resetAt.getTime()) / (1000 * 60 * 60 * 24);
-    if (daysSinceReset >= 30) scansUsed = 0;
+    // Still within window
     const scansLeft = Math.max(0, limit - scansUsed);
-    return { allowed: scansLeft > 0, scansLeft };
+    if (scansLeft === 0) {
+      const resetAt = new Date(periodStart.getTime() + 24 * 60 * 60 * 1000).toISOString();
+      return { allowed: false, scansLeft: 0, resetAt };
+    }
+    return { allowed: true, scansLeft };
+
+  } else {
+    // No active window yet
+    if (scansUsed >= limit) {
+      // Start the 24h clock now (handles legacy users)
+      const now = new Date();
+      await supabase.from("users").update({ period_start: now.toISOString() }).eq("email", email);
+      const resetAt = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
+      return { allowed: false, scansLeft: 0, resetAt };
+    }
+    return { allowed: true, scansLeft: limit - scansUsed };
   }
 }

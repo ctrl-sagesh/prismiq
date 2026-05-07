@@ -8,7 +8,7 @@ import { parsePdf } from "@/lib/pdfParser";
 import { checkUserCanScan, incrementUserScans } from "@/lib/supabase";
 import { SummarizeMode } from "@/lib/claude";
 
-export const maxDuration = 60;
+export const maxDuration = 120;
 
 const ANON_LIMIT = 2;
 

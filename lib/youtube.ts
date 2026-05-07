@@ -143,6 +143,33 @@ function extractDurationFromHtml(html: string): string {
   return `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, "0")}`;
 }
 
+/**
+ * Smart-samples a long transcript so the full video is represented.
+ * For a 1-hour video (~80k–120k chars) this returns up to 80k chars
+ * distributed across beginning, multiple middle sections, and the end.
+ */
+function smartSampleTranscript(transcript: string, maxChars = 80000): string {
+  if (transcript.length <= maxChars) return transcript;
+
+  // Divide budget: 35% start, 30% middle, 35% end
+  const startLen  = Math.floor(maxChars * 0.35);
+  const midLen    = Math.floor(maxChars * 0.30);
+  const endLen    = maxChars - startLen - midLen;
+
+  const start  = transcript.slice(0, startLen);
+  const midOff = Math.floor(transcript.length / 2) - Math.floor(midLen / 2);
+  const middle = transcript.slice(midOff, midOff + midLen);
+  const end    = transcript.slice(transcript.length - endLen);
+
+  return (
+    start +
+    "\n\n[... middle of video ...]\n\n" +
+    middle +
+    "\n\n[... later in video ...]\n\n" +
+    end
+  );
+}
+
 function parseCaptionXml(xml: string): string {
   const tags = xml.match(/<text[^>]*>([\s\S]*?)<\/text>/g);
   if (!tags || tags.length === 0) return "";
@@ -223,7 +250,7 @@ export async function getYoutubeTranscript(url: string): Promise<string> {
           const xml = await xmlRes.text();
           const transcript = parseCaptionXml(xml);
           if (transcript && transcript.length > 100) {
-            return transcript.slice(0, 15000);
+            return smartSampleTranscript(transcript);
           }
         } catch {
           // Fall through to description fallback
@@ -243,5 +270,5 @@ export async function getYoutubeTranscript(url: string): Promise<string> {
     description ? `\nDescription:\n${description}` : "",
   ].filter(Boolean).join("\n");
 
-  return parts.slice(0, 15000);
+  return parts.slice(0, 30000);
 }

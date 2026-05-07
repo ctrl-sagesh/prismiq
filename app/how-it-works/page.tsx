@@ -212,6 +212,49 @@ export default function HowItWorksPage() {
 
       <main className="relative z-10 flex flex-col items-center px-4 pt-28 pb-24 min-h-screen">
 
+        {/* Floating decorative icons — scattered behind the hero */}
+        <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
+          {/* Left column */}
+          <div className="animate-float absolute left-[6%] top-[14%] flex items-center gap-1.5 rounded-full border border-violet-500/20 bg-violet-500/10 px-3 py-1.5 text-xs text-violet-300 shadow-sm backdrop-blur-sm">
+            <span>📋</span><span>Summarize</span>
+          </div>
+          <div className="animate-float-rev absolute left-[4%] top-[32%] flex items-center gap-1.5 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1.5 text-xs text-blue-300 shadow-sm backdrop-blur-sm" style={{ animationDelay: "0.8s" }}>
+            <span>📝</span><span>Key Notes</span>
+          </div>
+          <div className="animate-float-slow absolute left-[8%] top-[52%] flex items-center gap-1.5 rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1.5 text-xs text-amber-300 shadow-sm backdrop-blur-sm" style={{ animationDelay: "1.6s" }}>
+            <span>🃏</span><span>Flashcards</span>
+          </div>
+          <div className="animate-float absolute left-[3%] top-[70%] flex items-center gap-1.5 rounded-full border border-cyan-500/20 bg-cyan-500/10 px-3 py-1.5 text-xs text-cyan-300 shadow-sm backdrop-blur-sm" style={{ animationDelay: "2.4s" }}>
+            <span>📖</span><span>Glossary</span>
+          </div>
+          {/* Right column */}
+          <div className="animate-float-slow absolute right-[6%] top-[13%] flex items-center gap-1.5 rounded-full border border-pink-500/20 bg-pink-500/10 px-3 py-1.5 text-xs text-pink-300 shadow-sm backdrop-blur-sm" style={{ animationDelay: "0.5s" }}>
+            <span>💡</span><span>Q&amp;A</span>
+          </div>
+          <div className="animate-float absolute right-[4%] top-[30%] flex items-center gap-1.5 rounded-full border border-green-500/20 bg-green-500/10 px-3 py-1.5 text-xs text-green-300 shadow-sm backdrop-blur-sm" style={{ animationDelay: "1.2s" }}>
+            <span>🔍</span><span>Search</span>
+          </div>
+          <div className="animate-float-rev absolute right-[7%] top-[50%] flex items-center gap-1.5 rounded-full border border-rose-500/20 bg-rose-500/10 px-3 py-1.5 text-xs text-rose-300 shadow-sm backdrop-blur-sm" style={{ animationDelay: "2.0s" }}>
+            <span>📊</span><span>Quiz</span>
+          </div>
+          <div className="animate-float-slow absolute right-[3%] top-[68%] flex items-center gap-1.5 rounded-full border border-purple-500/20 bg-purple-500/10 px-3 py-1.5 text-xs text-purple-300 shadow-sm backdrop-blur-sm" style={{ animationDelay: "0.3s" }}>
+            <span>💬</span><span>Chat</span>
+          </div>
+          {/* Scattered source-type chips */}
+          <div className="animate-float absolute left-[15%] top-[8%] flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/40 shadow-sm backdrop-blur-sm" style={{ animationDelay: "1.0s" }}>
+            <span>▶</span><span>YouTube</span>
+          </div>
+          <div className="animate-float-rev absolute right-[15%] top-[7%] flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/40 shadow-sm backdrop-blur-sm" style={{ animationDelay: "1.8s" }}>
+            <span>📄</span><span>PDF</span>
+          </div>
+          <div className="animate-float absolute left-[20%] top-[85%] flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/40 shadow-sm backdrop-blur-sm" style={{ animationDelay: "0.6s" }}>
+            <span>🌐</span><span>Website</span>
+          </div>
+          <div className="animate-float-slow absolute right-[20%] top-[84%] flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/40 shadow-sm backdrop-blur-sm" style={{ animationDelay: "2.2s" }}>
+            <span>🖼</span><span>Image</span>
+          </div>
+        </div>
+
         {/* Hero */}
         <div className="text-center mb-14 max-w-lg">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-violet-500/30 bg-violet-500/10 text-violet-300 text-xs mb-5">

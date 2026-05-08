@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const MODEL = process.env.CLAUDE_MODEL || "claude-sonnet-4-6";
 
 export type Action = "summarize" | "notes" | "qa" | "search" | "flashcards" | "quiz" | "glossary";
 export type SummarizeMode = "brief" | "detailed";
@@ -30,7 +31,7 @@ export async function processWithClaude(
 
     qa: `Read the following content and write 8 to 10 thoughtful questions and answers covering the most important ideas. Write questions a curious student would actually ask. Write answers as a knowledgeable teacher would — in 2 to 4 clear natural sentences. Format each one exactly as:\n\nQ: [question here]\nA: [answer here in natural sentences]\n\n${NO_BULLETS}\n\nContent:\n${content}`,
 
-    search: `The user wants to find this specific information: "${searchQuery}"\n\nRead through the content below and answer their question directly and naturally, as if you are a helpful expert explaining it to them. Be specific and clear. Write in normal conversational sentences. ${NO_BULLETS}\n\nContent:\n${content}`,
+    search: `The user wants to find this specific information: "${(searchQuery || "").replace(/["\n\r]/g, " ").slice(0, 500)}"\n\nRead through the content below and answer their question directly and naturally, as if you are a helpful expert explaining it to them. Be specific and clear. Write in normal conversational sentences. ${NO_BULLETS}\n\nContent:\n${content}`,
 
     flashcards: `Generate 8 to 10 flashcards for studying this content. Return ONLY a valid JSON array — no explanation, no markdown, no code blocks, just raw JSON.\n\nEach card must have "front" (a question or key term) and "back" (the answer or definition).\n\nFormat:\n[{"front":"Question or term","back":"Answer or definition"},{"front":"...","back":"..."}]\n\nContent:\n${content}`,
 
@@ -40,7 +41,7 @@ export async function processWithClaude(
   };
 
   const message = await client.messages.create({
-    model: "claude-sonnet-4-6",
+    model: MODEL,
     max_tokens: 4096,
     messages: [{ role: "user", content: prompts[action] }],
   });
@@ -62,14 +63,14 @@ export async function processImageWithClaude(
       : `Look at this image and write a thorough description of everything it contains — any text, diagrams, data, and what it is about. Use clear headings if there are multiple sections. ${NO_BULLETS}`,
     notes: `Extract the key information from this image and write it as clean study notes. Use clear headings for each topic. Write 2 to 4 natural sentences per heading explaining the key ideas. ${NO_BULLETS}`,
     qa: `Based on this image, write 6 to 8 natural questions and answers. Format each exactly as:\n\nQ: [question]\nA: [answer in clear natural sentences]\n\n${NO_BULLETS}`,
-    search: `The user is looking for: "${searchQuery}". Look at this image and find that specific information. Answer directly and clearly in normal conversational sentences. ${NO_BULLETS}`,
+    search: `The user is looking for: "${(searchQuery || "").replace(/["\n\r]/g, " ").slice(0, 500)}". Look at this image and find that specific information. Answer directly and clearly in normal conversational sentences. ${NO_BULLETS}`,
     flashcards: `Generate 6 to 8 flashcards based on what you see in this image. Return ONLY a valid JSON array — no explanation, no markdown, no code blocks.\n\nFormat: [{"front":"Question or term","back":"Answer or definition"},...]`,
     quiz: `Create 5 multiple choice quiz questions based on this image. Return ONLY a valid JSON array — no explanation, no markdown, no code blocks.\n\nEach item: {"question":"...","options":["A. ...","B. ...","C. ...","D. ..."],"answer":"A","explanation":"..."}`,
     glossary: `Extract the 6 to 10 most important terms visible in this image and define each one. Format each exactly as:\n\n**Term**: Clear definition in 1 to 2 sentences.\n\n${NO_BULLETS}`,
   };
 
   const message = await client.messages.create({
-    model: "claude-sonnet-4-6",
+    model: MODEL,
     max_tokens: 4096,
     messages: [
       {
@@ -107,7 +108,7 @@ ${content}`;
   ];
 
   const message = await client.messages.create({
-    model: "claude-sonnet-4-6",
+    model: MODEL,
     max_tokens: 1024,
     system: systemPrompt,
     messages,

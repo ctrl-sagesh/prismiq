@@ -26,10 +26,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing content or question." }, { status: 400 });
     }
 
+    const MAX_MSG_CHARS = 2000;
+    const safeHistory = (history || [])
+      .slice(-6)
+      .map((m) => ({ ...m, content: m.content.slice(0, MAX_MSG_CHARS) }));
+
     const answer = await chatWithContent(
       content.slice(0, 12000),
-      question,
-      (history || []).slice(-6) // keep last 3 exchanges
+      question.slice(0, 1000),
+      safeHistory
     );
 
     return NextResponse.json({ answer });

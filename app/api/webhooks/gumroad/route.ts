@@ -12,17 +12,19 @@ function getPlanFromProductName(name: string): "starter" | "pro" | "unlimited" |
 }
 
 export async function POST(req: NextRequest) {
+  const expectedSellerId = process.env.GUMROAD_SELLER_ID;
+  if (!expectedSellerId) {
+    console.error("GUMROAD_SELLER_ID env var is not set — rejecting all webhooks");
+    return NextResponse.json({ error: "Server misconfiguration" }, { status: 500 });
+  }
+
   // Gumroad sends webhooks as application/x-www-form-urlencoded
   const text = await req.text();
   const params = new URLSearchParams(text);
 
   const sellerIdFromPayload = params.get("seller_id") ?? "";
-  const expectedSellerId = process.env.GUMROAD_SELLER_ID ?? "";
-
-  // Verify this webhook is from our Gumroad account
-  // Note: Gumroad sends seller_id as a base64-encoded string
-  if (expectedSellerId && sellerIdFromPayload !== expectedSellerId) {
-    console.error("Gumroad webhook seller_id mismatch:", sellerIdFromPayload);
+  if (sellerIdFromPayload !== expectedSellerId) {
+    console.error("Gumroad webhook seller_id verification failed");
     return NextResponse.json({ error: "Invalid seller" }, { status: 401 });
   }
 
@@ -35,6 +37,18 @@ export async function POST(req: NextRequest) {
   const ended = params.get("subscription_ended_at") ?? "";
 
   if (!email) return NextResponse.json({ ok: true });
+
+  // Idempotency: skip if we've already processed this exact sale
+  if (saleId) {
+    const { data: existing } = await supabase
+      .from("users")
+      .select("gumroad_sale_id")
+      .eq("email", email)
+      .single();
+    if (existing?.gumroad_sale_id === saleId && !refunded && !cancelled && !ended) {
+      return NextResponse.json({ ok: true });
+    }
+  }
 
   const plan = getPlanFromProductName(productName);
 
@@ -50,6 +64,7 @@ export async function POST(req: NextRequest) {
         gumroad_sale_id: saleId,
         gumroad_subscription_id: subscriptionId,
       }, { onConflict: "email" });
+      console.log(`[WEBHOOK] Upgraded ${email} to ${plan}`);
     }
   }
 
@@ -58,6 +73,7 @@ export async function POST(req: NextRequest) {
     await supabase.from("users")
       .update({ plan: "free", scans_used: 0, period_start: null })
       .eq("email", email);
+    console.log(`[WEBHOOK] Downgraded ${email} to free`);
   }
 
   return NextResponse.json({ ok: true });

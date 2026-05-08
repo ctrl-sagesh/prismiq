@@ -5,7 +5,7 @@ import { processWithClaude, processImageWithClaude, Action } from "@/lib/claude"
 import { scrapeUrl } from "@/lib/scraper";
 import { getYoutubeTranscript } from "@/lib/youtube";
 import { parsePdf } from "@/lib/pdfParser";
-import { checkUserCanScan, incrementUserScans, PLAN_VIDEO_LIMITS, Plan } from "@/lib/supabase";
+import { checkAndIncrementScan, PLAN_VIDEO_LIMITS, Plan } from "@/lib/supabase";
 import { SummarizeMode } from "@/lib/claude";
 
 export const maxDuration = 120;
@@ -37,6 +37,12 @@ async function extractContent(formData: FormData, maxVideoMinutes: number): Prom
 
   if (inputType === "file") {
     const file = formData.get("file") as File;
+
+    const MAX_FILE_BYTES = 5 * 1024 * 1024; // 5 MB
+    if (file.size > MAX_FILE_BYTES) {
+      throw new Error("File is too large. Maximum size is 5 MB.");
+    }
+
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
@@ -45,9 +51,14 @@ async function extractContent(formData: FormData, maxVideoMinutes: number): Prom
       return { content: text, isImage: false };
     }
 
-    if (file.type.startsWith("image/")) {
+    const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+    if (ALLOWED_IMAGE_TYPES.includes(file.type)) {
       const base64 = buffer.toString("base64");
       return { content: "", isImage: true, base64, mediaType: file.type };
+    }
+
+    if (file.type.startsWith("image/")) {
+      throw new Error("Unsupported image format. Please use JPEG, PNG, GIF, or WebP.");
     }
 
     const text = buffer.toString("utf-8").slice(0, 15000);
@@ -62,7 +73,7 @@ export async function POST(req: NextRequest) {
   const cookieStore = await cookies();
 
   if (session?.user?.email) {
-    const { allowed, scansLeft, resetAt, plan } = await checkUserCanScan(session.user.email);
+    const { allowed, scansLeft, resetAt, plan } = await checkAndIncrementScan(session.user.email);
     if (!allowed) {
       return NextResponse.json({ error: "upgrade_required", resetAt }, { status: 429 });
     }
@@ -83,12 +94,11 @@ export async function POST(req: NextRequest) {
         result = await processWithClaude(content, action, searchQuery || undefined, summarizeMode);
       }
 
-      await incrementUserScans(session.user.email);
       // Return extractedContent (text only) for chat follow-ups
       return NextResponse.json({
         result,
         isSignedIn: true,
-        scansLeft: scansLeft - 1,
+        scansLeft,
         extractedContent: isImage ? null : content.slice(0, 12000),
       });
 
@@ -126,7 +136,11 @@ export async function POST(req: NextRequest) {
         extractedContent: isImage ? null : content.slice(0, 12000),
       });
       response.cookies.set("prismiq_scans", String(anonScans + 1), {
-        maxAge: 60 * 60 * 24 * 30, httpOnly: true, path: "/",
+        maxAge: 60 * 60 * 24 * 30,
+        httpOnly: true,
+        secure: true,
+        sameSite: "strict",
+        path: "/",
       });
       return response;
 

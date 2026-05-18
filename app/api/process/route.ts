@@ -17,11 +17,22 @@ function isYoutubeUrl(url: string) {
 }
 
 function isUserError(message: string) {
-  return message.includes("caption") || message.includes("transcript")
-    || message.includes("live stream") || message.includes("upcoming")
-    || message.includes("private") || message.includes("age-restricted")
-    || message.includes("Could not read") || message.includes("Could not extract")
-    || message.includes("minutes long") || message.includes("plan supports up to");
+  return (
+    message.includes("caption") ||
+    message.includes("transcript") ||
+    message.includes("subtitles") ||
+    message.includes("live stream") ||
+    message.includes("upcoming") ||
+    message.includes("private") ||
+    message.includes("age-restricted") ||
+    message.includes("Could not read") ||
+    message.includes("Could not extract") ||
+    message.includes("minutes long") ||
+    message.includes("plan supports up to") ||
+    message.includes("valid YouTube link") ||
+    message.includes("File is too large") ||
+    message.includes("Unsupported image format")
+  );
 }
 
 async function extractContent(formData: FormData, maxVideoMinutes: number): Promise<{ content: string; isImage: boolean; base64?: string; mediaType?: string }> {

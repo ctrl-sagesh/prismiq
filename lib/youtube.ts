@@ -1,10 +1,14 @@
+import { YoutubeTranscript } from "youtube-transcript";
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
 export function extractVideoId(url: string): string | null {
   const patterns = [
     /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
     /youtube\.com\/shorts\/([^&\n?#]+)/,
-    /youtube\.com\/live\/([^&\n?#]+)/,       // live stream URLs
-    /youtube\.com\/v\/([^&\n?#]+)/,           // old embed format
-    /(?:m\.)?youtube\.com\/watch\?.*v=([^&\n?#]+)/, // mobile URLs
+    /youtube\.com\/live\/([^&\n?#]+)/,
+    /youtube\.com\/v\/([^&\n?#]+)/,
+    /(?:m\.)?youtube\.com\/watch\?.*v=([^&\n?#]+)/,
   ];
   for (const p of patterns) {
     const m = url.match(p);
@@ -50,7 +54,8 @@ interface PlayerResponse {
   };
 }
 
-// YouTube's official public oEmbed API — works from any IP, no auth needed.
+// ─── YouTube oEmbed (always works, gives title/author) ────────────────────────
+
 async function fetchOEmbed(videoId: string): Promise<OEmbedResponse> {
   try {
     const res = await fetch(
@@ -63,7 +68,31 @@ async function fetchOEmbed(videoId: string): Promise<OEmbedResponse> {
   }
 }
 
-// Fetch watch page with consent cookies — used to get description + captions.
+// ─── Layer 1: youtube-transcript library (Innertube API) ─────────────────────
+// Most reliable. Uses YouTube's internal transcript API endpoint.
+
+async function fetchTranscriptViaLibrary(videoId: string): Promise<string | null> {
+  try {
+    const items = await YoutubeTranscript.fetchTranscript(videoId, { lang: "en" });
+    if (!items || items.length === 0) return null;
+    const text = items.map((i) => i.text).join(" ").replace(/\s+/g, " ").trim();
+    return text.length > 100 ? text : null;
+  } catch {
+    // Try without language filter (picks whatever is available)
+    try {
+      const items = await YoutubeTranscript.fetchTranscript(videoId);
+      if (!items || items.length === 0) return null;
+      const text = items.map((i) => i.text).join(" ").replace(/\s+/g, " ").trim();
+      return text.length > 100 ? text : null;
+    } catch {
+      return null;
+    }
+  }
+}
+
+// ─── Layer 2: Watch-page HTML scraping (fallback) ────────────────────────────
+// Less reliable from data-center IPs but acts as backup.
+
 async function fetchWatchPage(videoId: string): Promise<string> {
   try {
     const res = await fetch(
@@ -123,53 +152,6 @@ function extractPlayerResponse(html: string): PlayerResponse | null {
   ) as PlayerResponse | null;
 }
 
-function extractDescriptionFromHtml(html: string): string {
-  if (!html) return "";
-  const playerResponse = extractPlayerResponse(html);
-  if (playerResponse?.videoDetails?.shortDescription) {
-    return playerResponse.videoDetails.shortDescription;
-  }
-  const metaMatch =
-    html.match(/<meta name="description" content="([^"]+)"/) ||
-    html.match(/<meta property="og:description" content="([^"]+)"/);
-  return decodeHtmlEntities(metaMatch?.[1] ?? "");
-}
-
-function extractDurationFromHtml(html: string): string {
-  if (!html) return "";
-  const playerResponse = extractPlayerResponse(html);
-  const secs = parseInt(playerResponse?.videoDetails?.lengthSeconds ?? "0", 10);
-  if (!secs) return "";
-  return `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, "0")}`;
-}
-
-/**
- * Smart-samples a long transcript so the full video is represented.
- * For a 1-hour video (~80k–120k chars) this returns up to 80k chars
- * distributed across beginning, multiple middle sections, and the end.
- */
-function smartSampleTranscript(transcript: string, maxChars = 80000): string {
-  if (transcript.length <= maxChars) return transcript;
-
-  // Divide budget: 35% start, 30% middle, 35% end
-  const startLen  = Math.floor(maxChars * 0.35);
-  const midLen    = Math.floor(maxChars * 0.30);
-  const endLen    = maxChars - startLen - midLen;
-
-  const start  = transcript.slice(0, startLen);
-  const midOff = Math.floor(transcript.length / 2) - Math.floor(midLen / 2);
-  const middle = transcript.slice(midOff, midOff + midLen);
-  const end    = transcript.slice(transcript.length - endLen);
-
-  return (
-    start +
-    "\n\n[... middle of video ...]\n\n" +
-    middle +
-    "\n\n[... later in video ...]\n\n" +
-    end
-  );
-}
-
 function parseCaptionXml(xml: string): string {
   const tags = xml.match(/<text[^>]*>([\s\S]*?)<\/text>/g);
   if (!tags || tags.length === 0) return "";
@@ -185,32 +167,97 @@ function parseCaptionXml(xml: string): string {
     .trim();
 }
 
-// Friendly error messages for specific video types
+async function fetchTranscriptViaHtmlScrape(
+  videoId: string,
+  html: string
+): Promise<string | null> {
+  if (!html) return null;
+  const playerResponse = extractPlayerResponse(html);
+  const captionTracks =
+    playerResponse?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
+  if (!captionTracks || captionTracks.length === 0) return null;
+
+  const track =
+    captionTracks.find((t) => t.languageCode === "en") ||
+    captionTracks.find((t) => t.languageCode?.startsWith("en")) ||
+    captionTracks[0];
+
+  if (!track?.baseUrl) return null;
+
+  try {
+    const xmlRes = await fetch(track.baseUrl, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "Accept-Language": "en-US,en;q=0.9",
+        Referer: "https://www.youtube.com/",
+        Cookie:
+          "CONSENT=YES+cb.20210328-17-p0.en+FX+294; SOCS=CAESEwgDEgk4OTI4NDM3NDEYASAB",
+      },
+    });
+    const xml = await xmlRes.text();
+    const transcript = parseCaptionXml(xml);
+    return transcript.length > 100 ? transcript : null;
+  } catch {
+    return null;
+  }
+}
+
+// ─── Smart sampling for long transcripts ─────────────────────────────────────
+
+export function smartSampleTranscript(transcript: string, maxChars = 80000): string {
+  if (transcript.length <= maxChars) return transcript;
+  const startLen = Math.floor(maxChars * 0.35);
+  const midLen   = Math.floor(maxChars * 0.30);
+  const endLen   = maxChars - startLen - midLen;
+  const start    = transcript.slice(0, startLen);
+  const midOff   = Math.floor(transcript.length / 2) - Math.floor(midLen / 2);
+  const middle   = transcript.slice(midOff, midOff + midLen);
+  const end      = transcript.slice(transcript.length - endLen);
+  return (
+    start +
+    "\n\n[... middle of video ...]\n\n" +
+    middle +
+    "\n\n[... later in video ...]\n\n" +
+    end
+  );
+}
+
+// ─── Video-type guard ────────────────────────────────────────────────────────
+
 function getVideoTypeError(playerResponse: PlayerResponse | null, title: string): string | null {
   if (!playerResponse?.videoDetails) return null;
   const vd = playerResponse.videoDetails;
-
   if (vd.isLive) {
     return `"${title}" is a live stream. Live videos cannot be summarized while broadcasting. Try again after the stream ends.`;
   }
   if (vd.isUpcoming) {
     return `"${title}" is an upcoming stream that hasn't started yet. Come back when it's live or after it ends.`;
   }
-  // isLiveContent is true for past live replays — those are fine to process
   return null;
 }
 
+function extractDurationFromHtml(html: string): number {
+  const playerResponse = extractPlayerResponse(html);
+  return parseInt(playerResponse?.videoDetails?.lengthSeconds ?? "0", 10);
+}
+
+// ─── Main export ──────────────────────────────────────────────────────────────
+
 export async function getYoutubeTranscript(url: string, maxMinutes?: number): Promise<string> {
   const videoId = extractVideoId(url);
-  if (!videoId) throw new Error("Could not extract a video ID from this URL. Make sure it's a valid YouTube link.");
+  if (!videoId)
+    throw new Error(
+      "Could not extract a video ID from this URL. Make sure it's a valid YouTube link."
+    );
 
-  // Run oEmbed (guaranteed) and watch page fetch (best-effort) in parallel
+  // Run oEmbed + watch page in parallel — oEmbed is the reliable source of title/author
   const [oembed, html] = await Promise.all([
     fetchOEmbed(videoId),
     fetchWatchPage(videoId),
   ]);
 
-  const title = oembed.title ?? "";
+  const title  = oembed.title ?? "";
   const author = oembed.author_name ?? "";
 
   if (!title) {
@@ -219,14 +266,14 @@ export async function getYoutubeTranscript(url: string, maxMinutes?: number): Pr
     );
   }
 
-  // Parse playerResponse once and check for unsupported video types
+  // Guard against unsupported video types (live, upcoming)
   const playerResponse = html ? extractPlayerResponse(html) : null;
   const typeError = getVideoTypeError(playerResponse, title);
   if (typeError) throw new Error(typeError);
 
   // Enforce per-plan video length limit
-  if (maxMinutes) {
-    const rawSecs = parseInt(playerResponse?.videoDetails?.lengthSeconds ?? "0", 10);
+  if (maxMinutes && html) {
+    const rawSecs = extractDurationFromHtml(html);
     if (rawSecs > 0 && rawSecs > maxMinutes * 60) {
       const videoMins = Math.round(rawSecs / 60);
       const upgradeHint =
@@ -241,51 +288,35 @@ export async function getYoutubeTranscript(url: string, maxMinutes?: number): Pr
     }
   }
 
-  // Try caption transcript from the watch page HTML
-  if (html && playerResponse) {
-    const captionTracks =
-      playerResponse?.captions?.playerCaptionsTracklistRenderer?.captionTracks;
+  // ── Layer 1: youtube-transcript library (most reliable) ──────────────────
+  const transcriptViaLib = await fetchTranscriptViaLibrary(videoId);
+  if (transcriptViaLib) {
+    const header = [
+      `Video: "${title}"`,
+      author ? `Channel: ${author}` : "",
+    ]
+      .filter(Boolean)
+      .join("\n") + "\n\nTranscript:\n";
+    return header + smartSampleTranscript(transcriptViaLib);
+  }
 
-    if (captionTracks && captionTracks.length > 0) {
-      const track =
-        captionTracks.find((t) => t.languageCode === "en") ||
-        captionTracks.find((t) => t.languageCode?.startsWith("en")) ||
-        captionTracks[0];
-
-      if (track?.baseUrl) {
-        try {
-          const xmlRes = await fetch(track.baseUrl, {
-            headers: {
-              "User-Agent":
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-              "Accept-Language": "en-US,en;q=0.9",
-              Referer: "https://www.youtube.com/",
-              Cookie:
-                "CONSENT=YES+cb.20210328-17-p0.en+FX+294; SOCS=CAESEwgDEgk4OTI4NDM3NDEYASAB",
-            },
-          });
-          const xml = await xmlRes.text();
-          const transcript = parseCaptionXml(xml);
-          if (transcript && transcript.length > 100) {
-            return smartSampleTranscript(transcript);
-          }
-        } catch {
-          // Fall through to description fallback
-        }
-      }
+  // ── Layer 2: HTML scrape caption tracks ──────────────────────────────────
+  if (html) {
+    const transcriptViaHtml = await fetchTranscriptViaHtmlScrape(videoId, html);
+    if (transcriptViaHtml) {
+      const header = [
+        `Video: "${title}"`,
+        author ? `Channel: ${author}` : "",
+      ]
+        .filter(Boolean)
+        .join("\n") + "\n\nTranscript:\n";
+      return header + smartSampleTranscript(transcriptViaHtml);
     }
   }
 
-  // Fallback: use title + description + duration for AI to work with
-  const description = extractDescriptionFromHtml(html);
-  const duration = extractDurationFromHtml(html);
-
-  const parts = [
-    `Video: "${title}"`,
-    author ? `Channel: ${author}` : "",
-    duration ? `Duration: ${duration}` : "",
-    description ? `\nDescription:\n${description}` : "",
-  ].filter(Boolean).join("\n");
-
-  return parts.slice(0, 30000);
+  // ── Layer 3: No transcript available — tell user clearly ─────────────────
+  throw new Error(
+    `Could not extract a transcript for "${title}". This video may not have captions or subtitles enabled. ` +
+    `Try a different video, or use a video that has CC (closed captions) available.`
+  );
 }

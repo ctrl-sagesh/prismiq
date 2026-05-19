@@ -8,6 +8,7 @@ import { parsePdf } from "@/lib/pdfParser";
 import { checkAndIncrementScan, PLAN_VIDEO_LIMITS, Plan } from "@/lib/supabase";
 import { SummarizeMode } from "@/lib/claude";
 
+export const runtime = "nodejs";
 export const maxDuration = 120;
 
 const ANON_LIMIT = 2;

@@ -20,7 +20,8 @@ export default function Navbar() {
       </Link>
 
       <div className="flex items-center gap-3">
-        <Link href="/upgrade" className="text-sm text-white/60 hover:text-white transition-colors hidden sm:block">Pricing</Link>
+        <Link href="/how-it-works" className="text-sm text-white/60 hover:text-white transition-colors hidden sm:block">How it works</Link>
+        <Link href="/upgrade" className="text-sm text-white/60 hover:text-white transition-colors">Pricing</Link>
 
         <Link href="/upgrade" className="px-4 py-2 rounded-full bg-gradient-to-r from-violet-600 to-pink-600 text-sm font-semibold text-white hover:opacity-90 transition-opacity">
           Upgrade

@@ -9,6 +9,8 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  // youtubei.js uses Node built-ins and dynamic requires — keep it external
+  serverExternalPackages: ["youtubei.js"],
 };
 
 export default nextConfig;

@@ -8,6 +8,7 @@ import "./globals.css";
 const geist = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://prismiqai.vercel.app"),
   title: "Prismiq: Summarize YouTube, PDFs and Websites Instantly",
   description: "Paste any YouTube video, website, PDF or image and get a clear summary, study notes or Q&A in seconds. Free to try, no account needed.",
   icons: {

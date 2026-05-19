@@ -88,6 +88,84 @@ export function smartSampleTranscript(transcript: string, maxChars = 80000): str
   );
 }
 
+// ─── Layer 0: Supadata transcript API (paid, most reliable) ──────────────────
+// Set SUPADATA_API_KEY env var to enable. Free tier gives 100 transcripts/month.
+
+interface SupadataResponse {
+  content?: string | Array<{ text?: string }>;
+  lang?: string;
+  availableLangs?: string[];
+  error?: string;
+  message?: string;
+  title?: string;
+}
+
+async function fetchViaSupadata(videoId: string): Promise<{
+  title: string;
+  author: string;
+  durationSecs: number;
+  isLive: boolean;
+  isUpcoming: boolean;
+  transcript: string;
+} | null> {
+  const key = process.env.SUPADATA_API_KEY;
+  if (!key) return null;
+
+  try {
+    console.log("[youtube] Trying Supadata...");
+    const res = await fetchTimeout(
+      `https://api.supadata.ai/v1/youtube/transcript?videoId=${videoId}&text=true&lang=en`,
+      15000,
+      {
+        headers: {
+          "x-api-key": key,
+          Accept: "application/json",
+        },
+      }
+    );
+
+    if (!res.ok) {
+      const txt = await res.text().catch(() => "");
+      console.error(`[youtube] Supadata ${res.status}: ${txt.slice(0, 300)}`);
+      return null;
+    }
+
+    const data = (await res.json()) as SupadataResponse;
+    if (data.error || data.message) {
+      console.error(`[youtube] Supadata error: ${data.error || data.message}`);
+      return null;
+    }
+
+    let transcript = "";
+    if (typeof data.content === "string") {
+      transcript = data.content;
+    } else if (Array.isArray(data.content)) {
+      transcript = data.content.map((c) => c.text ?? "").filter(Boolean).join(" ");
+    }
+    transcript = transcript.replace(/\s+/g, " ").trim();
+
+    if (transcript.length > 100) {
+      console.log(`[youtube] Supadata succeeded — ${transcript.length} chars`);
+      // Supadata doesn't always return title/author — fill via oEmbed
+      const oembed = await fetchOEmbed(videoId);
+      return {
+        title: data.title ?? oembed.title ?? `Video ${videoId}`,
+        author: oembed.author_name ?? "",
+        durationSecs: 0,
+        isLive: false,
+        isUpcoming: false,
+        transcript,
+      };
+    }
+    console.log("[youtube] Supadata returned empty transcript");
+    return null;
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error(`[youtube] Supadata threw: ${msg}`);
+    return null;
+  }
+}
+
 // ─── Layer 1a: Piped public API ───────────────────────────────────────────────
 // Piped is an open-source YouTube proxy. Many instances exist publicly.
 
@@ -443,16 +521,22 @@ export async function getYoutubeTranscript(url: string, maxMinutes?: number): Pr
 
   console.log(`[youtube] Processing video ${videoId}`);
 
-  // Try Piped first (most reliable public YouTube proxy)
-  let result = await fetchViaPiped(videoId);
+  // Layer 0: Paid transcript API (most reliable, used if SUPADATA_API_KEY set)
+  let result = await fetchViaSupadata(videoId);
 
-  // Fall back to Invidious mirrors
+  // Layer 1: Piped public proxies
+  if (!result) {
+    console.log("[youtube] Supadata not used / failed, trying Piped...");
+    result = await fetchViaPiped(videoId);
+  }
+
+  // Layer 2: Invidious mirrors
   if (!result) {
     console.log("[youtube] Piped failed, trying Invidious...");
     result = await fetchViaInvidious(videoId);
   }
 
-  // Last fallback: youtubei.js direct to YouTube (works locally, sometimes fails on Vercel)
+  // Layer 3: youtubei.js direct (works locally, often fails on Vercel)
   if (!result) {
     console.log("[youtube] Invidious failed, trying Innertube direct...");
     result = await fetchViaInnertube(videoId);

@@ -7,6 +7,7 @@ import { getYoutubeTranscript } from "@/lib/youtube";
 import { parsePdf } from "@/lib/pdfParser";
 import { checkAndIncrementScan, PLAN_VIDEO_LIMITS, Plan } from "@/lib/supabase";
 import { SummarizeMode } from "@/lib/claude";
+import { rateLimit, getClientIp, isOriginAllowed } from "@/lib/rateLimit";
 
 export const runtime = "nodejs";
 export const maxDuration = 120;
@@ -81,6 +82,23 @@ async function extractContent(formData: FormData, maxVideoMinutes: number): Prom
 }
 
 export async function POST(req: NextRequest) {
+  // ─── CSRF: block cross-origin browsers ──────────────────────────────────
+  if (!isOriginAllowed(req)) {
+    console.warn("[process] CSRF blocked origin:", req.headers.get("origin"));
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  // ─── IP rate limit: 15 requests / 60s per IP (anti-abuse) ───────────────
+  const ip = getClientIp(req);
+  const rl = await rateLimit(`process:${ip}`, 15, 60);
+  if (!rl.allowed) {
+    console.warn("[process] rate limit hit for IP", ip);
+    return NextResponse.json(
+      { error: "Too many requests. Please slow down and try again in a minute." },
+      { status: 429 }
+    );
+  }
+
   const session = await auth();
   const cookieStore = await cookies();
 
@@ -105,6 +123,8 @@ export async function POST(req: NextRequest) {
       } else {
         result = await processWithClaude(content, action, searchQuery || undefined, summarizeMode);
       }
+
+      console.log(`[AUDIT] scan email=${session.user.email} plan=${plan} action=${action} isImage=${isImage} scansLeft=${scansLeft}`);
 
       // Return extractedContent (text only) for chat follow-ups
       return NextResponse.json({
@@ -141,6 +161,7 @@ export async function POST(req: NextRequest) {
       }
 
       const scansLeft = ANON_LIMIT - anonScans - 1;
+      console.log(`[AUDIT] anon-scan ip=${ip} action=${action} isImage=${isImage} scansLeft=${scansLeft}`);
       const response = NextResponse.json({
         result,
         isSignedIn: false,

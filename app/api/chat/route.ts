@@ -2,10 +2,26 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { auth } from "@/auth";
 import { chatWithContent, ChatMessage } from "@/lib/claude";
+import { rateLimit, getClientIp, isOriginAllowed } from "@/lib/rateLimit";
 
 export const maxDuration = 30;
 
 export async function POST(req: NextRequest) {
+  // CSRF defense
+  if (!isOriginAllowed(req)) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  // Per-IP rate limit: 30 chat messages / 60s
+  const ip = getClientIp(req);
+  const rl = await rateLimit(`chat:${ip}`, 30, 60);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "You're sending messages too fast. Try again in a moment." },
+      { status: 429 }
+    );
+  }
+
   // Must be signed in or have anon scan history to use chat
   const session = await auth();
   const cookieStore = await cookies();

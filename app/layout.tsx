@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import SessionWrapper from "@/components/SessionWrapper";
 import Footer from "@/components/Footer";
 import CookieBanner from "@/components/CookieBanner";
@@ -41,6 +42,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <SessionWrapper>{children}</SessionWrapper>
         <Footer />
         <CookieBanner />
+        <Analytics />
       </body>
     </html>
   );

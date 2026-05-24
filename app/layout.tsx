@@ -14,9 +14,10 @@ export const metadata: Metadata = {
   description: "Paste any YouTube video, website, PDF or image and get a clear summary, study notes or Q&A in seconds. Free to try, no account needed.",
   icons: {
     icon: [
-      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.svg", type: "image/svg+xml" },
       { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
     ],
+    shortcut: "/favicon.ico",
     apple: "/apple-touch-icon.png",
   },
   openGraph: {

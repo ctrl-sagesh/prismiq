@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import Navbar from "@/components/Navbar";
+import WelcomeScreen from "@/components/WelcomeScreen";
 import ResultDisplay from "@/components/ResultDisplay";
 import FlashcardDisplay from "@/components/FlashcardDisplay";
 import QuizDisplay from "@/components/QuizDisplay";
@@ -39,6 +40,12 @@ const works = ["YouTube tutorials and lectures", "Any website or article", "PDF 
 const doesnt = ["Movies and TV clips", "Music videos", "Private or deleted videos", "Age-restricted videos"];
 
 export default function Home() {
+  const [showWelcome, setShowWelcome] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return !sessionStorage.getItem('prismiq_welcomed');
+    }
+    return true;
+  });
   const [inputType, setInputType] = useState<InputType>("url");
   const [url, setUrl] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -200,6 +207,12 @@ export default function Home() {
 
   return (
     <>
+      {showWelcome && (
+        <WelcomeScreen onEnter={() => {
+          setShowWelcome(false);
+          sessionStorage.setItem('prismiq_welcomed', '1');
+        }} />
+      )}
       <Navbar />
       {modal && <PaywallModal type={modal} onClose={() => setModal(null)} resetAt={resetAt} />}
 

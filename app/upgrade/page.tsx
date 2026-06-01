@@ -114,15 +114,15 @@ export default function UpgradePage() {
           style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px)", backgroundSize: "60px 60px" }} />
       </div>
 
-      <main className="relative z-10 flex flex-col items-center px-4 pt-28 pb-24 min-h-screen">
+      <main className="relative z-10 flex flex-col items-center px-3 sm:px-4 pt-20 sm:pt-28 pb-24 min-h-screen">
 
         {/* Hero */}
-        <div className="text-center mb-14 max-w-2xl">
+        <div className="text-center mb-8 sm:mb-14 max-w-2xl">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-violet-500/30 bg-violet-500/10 text-violet-300 text-xs mb-5 backdrop-blur-sm">
             <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
             Simple, transparent pricing
           </div>
-          <h1 className="text-5xl font-bold text-white mb-4 tracking-tight leading-tight">
+          <h1 className="text-3xl sm:text-5xl font-bold text-white mb-4 tracking-tight leading-tight">
             Unlock your{" "}
             <span className="relative inline-block">
               <span style={{ background: "linear-gradient(135deg, #a78bfa, #f472b6, #fb923c)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
@@ -131,16 +131,13 @@ export default function UpgradePage() {
               <span className="absolute -bottom-1 left-0 right-0 h-px bg-gradient-to-r from-violet-500/0 via-violet-500/50 to-violet-500/0" />
             </span>
           </h1>
-          <p className="text-white/50 text-lg">Start free. Upgrade when you need more. Cancel anytime.</p>
+          <p className="text-white/50 text-sm sm:text-lg">Start free. Upgrade when you need more. Cancel anytime.</p>
 
           {/* Trust row */}
-          <div className="flex items-center justify-center gap-6 mt-6 text-xs text-white/30">
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-1.5 sm:gap-6 mt-4 sm:mt-6 text-[11px] sm:text-xs text-white/30">
             <span className="flex items-center gap-1.5"><span className="text-green-400">✓</span> No card for free</span>
-            <span className="w-1 h-1 rounded-full bg-white/20" />
             <span className="flex items-center gap-1.5"><span className="text-green-400">✓</span> Cancel anytime</span>
-            <span className="w-1 h-1 rounded-full bg-white/20" />
             <span className="flex items-center gap-1.5"><span className="text-green-400">✓</span> Secure via Gumroad</span>
-            <span className="w-1 h-1 rounded-full bg-white/20" />
             <span className="flex items-center gap-1.5"><span className="text-green-400">✓</span> PayPal accepted</span>
           </div>
         </div>
@@ -210,8 +207,8 @@ export default function UpgradePage() {
         {/* Feature comparison table */}
         <div className="w-full max-w-4xl mb-16">
           <h3 className="text-white font-semibold text-center text-lg mb-6">Full feature comparison</h3>
-          <div className="rounded-2xl border border-white/10 overflow-hidden">
-            <table className="w-full text-sm">
+          <div className="rounded-2xl border border-white/10 overflow-x-auto">
+            <table className="w-full text-xs sm:text-sm min-w-[500px]">
               <thead>
                 <tr className="border-b border-white/10 bg-white/[0.03]">
                   <th className="text-left px-6 py-4 text-white/40 font-medium">Feature</th>

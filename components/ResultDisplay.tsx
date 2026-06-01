@@ -23,9 +23,20 @@ export default function ResultDisplay({ result, action, sourceUrl }: { result: s
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleShare = () => {
+  const handleShare = async () => {
     if (!sourceUrl) return;
-    const shareLink = `${window.location.origin}/?url=${encodeURIComponent(sourceUrl)}`;
+    const shareLink = `${window.location.origin}/?url=${encodeURIComponent(sourceUrl)}&action=${action}`;
+
+    // Try native share on mobile, fall back to clipboard
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: `Prismiq ${labels[action] || "Result"}`, url: shareLink });
+        return;
+      } catch {
+        // User cancelled or share failed — fall through to clipboard
+      }
+    }
+
     navigator.clipboard.writeText(shareLink);
     setShared(true);
     setTimeout(() => setShared(false), 2000);
@@ -54,87 +65,76 @@ export default function ResultDisplay({ result, action, sourceUrl }: { result: s
   };
 
   const renderLine = (line: string, i: number) => {
-    // H1 heading
-    if (line.startsWith("# ")) return <h1 key={i} className="text-xl font-bold text-white mt-5 mb-2 first:mt-0">{line.slice(2)}</h1>;
-    // H2 heading
-    if (line.startsWith("## ")) return <h2 key={i} className="text-base font-semibold text-violet-300 mt-5 mb-2 first:mt-0">{line.slice(3)}</h2>;
-    // H3 heading
+    if (line.startsWith("# ")) return <h1 key={i} className="text-lg sm:text-xl font-bold text-white mt-5 mb-2 first:mt-0">{line.slice(2)}</h1>;
+    if (line.startsWith("## ")) return <h2 key={i} className="text-sm sm:text-base font-semibold text-violet-300 mt-5 mb-2 first:mt-0">{line.slice(3)}</h2>;
     if (line.startsWith("### ")) return <h3 key={i} className="text-sm font-semibold text-purple-300 mt-4 mb-1">{line.slice(4)}</h3>;
-    // Divider
     if (line.trim() === "---") return <hr key={i} className="border-white/10 my-4" />;
-    // Q&A question line
     if (line.startsWith("Q:")) return <p key={i} className="font-semibold text-violet-200 mt-5 text-sm">{renderInline(line)}</p>;
-    // Q&A answer line
-    if (line.startsWith("A:")) return <p key={i} className="text-white/70 text-sm leading-relaxed mt-1 ml-4">{renderInline(line)}</p>;
-    // Bullet point
+    if (line.startsWith("A:")) return <p key={i} className="text-white/70 text-sm leading-relaxed mt-1 ml-2 sm:ml-4">{renderInline(line)}</p>;
     if (line.startsWith("- ") || line.startsWith("* ")) {
       return (
-        <div key={i} className="flex gap-2.5 text-sm text-white/70 leading-relaxed">
+        <div key={i} className="flex gap-2 sm:gap-2.5 text-sm text-white/70 leading-relaxed">
           <span className="text-violet-400 mt-1 shrink-0">·</span>
           <span>{renderInline(line.slice(2))}</span>
         </div>
       );
     }
-    // Numbered list
     if (/^\d+\.\s/.test(line)) {
       const text = line.replace(/^\d+\.\s/, "");
       const num = line.match(/^(\d+)\./)?.[1];
       return (
-        <div key={i} className="flex gap-2.5 text-sm text-white/70 leading-relaxed">
+        <div key={i} className="flex gap-2 sm:gap-2.5 text-sm text-white/70 leading-relaxed">
           <span className="text-violet-400 shrink-0 font-medium">{num}.</span>
           <span>{renderInline(text)}</span>
         </div>
       );
     }
-    // Empty line
     if (line.trim() === "") return <div key={i} className="h-2" />;
-    // Table row
     if (line.startsWith("|")) {
       const cells = line.split("|").filter(c => c.trim() !== "");
       const isSeparator = cells.every(c => /^[-:\s]+$/.test(c));
       if (isSeparator) return null;
       return (
-        <div key={i} className="grid text-sm" style={{ gridTemplateColumns: `repeat(${cells.length}, 1fr)` }}>
+        <div key={i} className="grid text-xs sm:text-sm overflow-x-auto" style={{ gridTemplateColumns: `repeat(${cells.length}, minmax(0, 1fr))` }}>
           {cells.map((cell, j) => (
-            <span key={j} className={`px-3 py-1.5 border-b border-white/10 text-white/70 ${j === 0 ? "font-medium text-white/90" : ""}`}>
+            <span key={j} className={`px-2 sm:px-3 py-1.5 border-b border-white/10 text-white/70 ${j === 0 ? "font-medium text-white/90" : ""}`}>
               {renderInline(cell.trim())}
             </span>
           ))}
         </div>
       );
     }
-    // Normal paragraph
     return <p key={i} className="text-sm text-white/70 leading-relaxed">{renderInline(line)}</p>;
   };
 
   return (
     <div className="w-full">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-green-400" />
           <h2 className="text-sm font-semibold text-white">{labels[action] || "Result"}</h2>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-1.5 sm:gap-2">
           <button onClick={handleCopy}
-            className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-xs text-white/50 hover:text-white hover:bg-white/10 transition-all cursor-pointer">
-            {copied ? "✓ Copied" : "Copy"}
+            className="flex-1 sm:flex-none px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-xs text-white/50 hover:text-white hover:bg-white/10 transition-all cursor-pointer">
+            {copied ? "✓ Copied" : "📋 Copy"}
           </button>
           <button onClick={handleDownload}
-            className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-xs text-white/50 hover:text-white hover:bg-white/10 transition-all cursor-pointer">
-            Download
+            className="flex-1 sm:flex-none px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-xs text-white/50 hover:text-white hover:bg-white/10 transition-all cursor-pointer">
+            📥 Download
           </button>
           {sourceUrl && (
             <button onClick={handleShare}
-              className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-xs text-white/50 hover:text-white hover:bg-white/10 transition-all cursor-pointer">
-              {shared ? "✓ Link copied" : "Share"}
+              className="flex-1 sm:flex-none px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-xs text-white/50 hover:text-white hover:bg-white/10 transition-all cursor-pointer">
+              {shared ? "✓ Link copied" : "🔗 Share"}
             </button>
           )}
         </div>
       </div>
 
       {/* Content */}
-      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-6 space-y-1.5 max-h-[620px] overflow-y-auto">
+      <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 sm:p-6 space-y-1.5 max-h-[620px] overflow-y-auto">
         {result.split("\n").map((line, i) => renderLine(line, i))}
       </div>
 

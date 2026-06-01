@@ -91,19 +91,21 @@ export default function AccountPage() {
           ) : (
             <>
               {/* Profile */}
-              <div className="flex items-center gap-4 mb-8">
-                {data.image ? (
-                  <Image src={data.image} alt="avatar" width={56} height={56} className="rounded-full border-2 border-white/15" />
-                ) : (
-                  <div className="w-14 h-14 rounded-full bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center text-2xl font-bold">
-                    {data.name?.[0] ?? "?"}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-8">
+                <div className="flex items-center gap-3 sm:gap-4">
+                  {data.image ? (
+                    <Image src={data.image} alt="avatar" width={48} height={48} className="rounded-full border-2 border-white/15" />
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center text-xl font-bold">
+                      {data.name?.[0] ?? "?"}
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-white font-semibold text-base sm:text-lg leading-tight">{data.name}</p>
+                    <p className="text-white/40 text-xs sm:text-sm truncate max-w-[200px] sm:max-w-none">{data.email}</p>
                   </div>
-                )}
-                <div>
-                  <p className="text-white font-semibold text-lg leading-tight">{data.name}</p>
-                  <p className="text-white/40 text-sm">{data.email}</p>
                 </div>
-                <div className={`ml-auto px-3 py-1 rounded-full border text-xs font-semibold uppercase tracking-wide ${PLAN_COLORS[data.plan]}`}>
+                <div className={`sm:ml-auto px-3 py-1 rounded-full border text-xs font-semibold uppercase tracking-wide ${PLAN_COLORS[data.plan]}`}>
                   {PLAN_LABELS[data.plan]}
                 </div>
               </div>

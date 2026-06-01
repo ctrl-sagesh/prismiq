@@ -5,7 +5,7 @@ import { processWithClaude, processImageWithClaude, Action } from "@/lib/claude"
 import { scrapeUrl } from "@/lib/scraper";
 import { getYoutubeTranscript } from "@/lib/youtube";
 import { parsePdf } from "@/lib/pdfParser";
-import { checkAndIncrementScan, PLAN_VIDEO_LIMITS, Plan } from "@/lib/supabase";
+import { checkUserCanScan, incrementUserScans, PLAN_VIDEO_LIMITS, Plan } from "@/lib/supabase";
 import { SummarizeMode } from "@/lib/claude";
 import { rateLimit, getClientIp, isOriginAllowed } from "@/lib/rateLimit";
 
@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
   const cookieStore = await cookies();
 
   if (session?.user?.email) {
-    const { allowed, scansLeft, resetAt, plan } = await checkAndIncrementScan(session.user.email);
+    const { allowed, scansLeft, resetAt, plan } = await checkUserCanScan(session.user.email);
     if (!allowed) {
       return NextResponse.json({ error: "upgrade_required", resetAt }, { status: 429 });
     }
@@ -124,13 +124,14 @@ export async function POST(req: NextRequest) {
         result = await processWithClaude(content, action, searchQuery || undefined, summarizeMode);
       }
 
+      await incrementUserScans(session.user.email);
+
       console.log(`[AUDIT] scan email=${session.user.email} plan=${plan} action=${action} isImage=${isImage} scansLeft=${scansLeft}`);
 
-      // Return extractedContent (text only) for chat follow-ups
       return NextResponse.json({
         result,
         isSignedIn: true,
-        scansLeft,
+        scansLeft: scansLeft - 1,
         extractedContent: isImage ? null : content.slice(0, 12000),
       });
 

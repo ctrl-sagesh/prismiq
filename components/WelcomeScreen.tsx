@@ -159,7 +159,7 @@ export default function WelcomeScreen({ onEnter }: WelcomeScreenProps) {
         {/* Get Started button */}
         <button
           onClick={handleEnter}
-          className={`group relative px-10 py-4 rounded-2xl font-semibold text-lg text-white overflow-hidden transition-all duration-1000 delay-1000 ${
+          className={`group relative px-10 py-4 rounded-2xl font-semibold text-lg text-white overflow-hidden transition-all duration-1000 delay-1000 cursor-pointer ${
             phase >= 2
               ? 'opacity-100 translate-y-0 hover:scale-105 active:scale-95'
               : 'opacity-0 translate-y-6'

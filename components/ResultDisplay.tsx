@@ -117,16 +117,16 @@ export default function ResultDisplay({ result, action, sourceUrl }: { result: s
         </div>
         <div className="flex gap-2">
           <button onClick={handleCopy}
-            className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-xs text-white/50 hover:text-white hover:bg-white/10 transition-all">
+            className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-xs text-white/50 hover:text-white hover:bg-white/10 transition-all cursor-pointer">
             {copied ? "✓ Copied" : "Copy"}
           </button>
           <button onClick={handleDownload}
-            className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-xs text-white/50 hover:text-white hover:bg-white/10 transition-all">
+            className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-xs text-white/50 hover:text-white hover:bg-white/10 transition-all cursor-pointer">
             Download
           </button>
           {sourceUrl && (
             <button onClick={handleShare}
-              className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-xs text-white/50 hover:text-white hover:bg-white/10 transition-all">
+              className="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-xs text-white/50 hover:text-white hover:bg-white/10 transition-all cursor-pointer">
               {shared ? "✓ Link copied" : "Share"}
             </button>
           )}

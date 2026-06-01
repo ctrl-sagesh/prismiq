@@ -13,7 +13,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
       <p className="text-white/40 mb-8 max-w-sm">An unexpected error occurred. This has been logged and we&apos;ll look into it.</p>
       <div className="flex gap-3">
         <button onClick={reset}
-          className="px-6 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold hover:opacity-90 transition-opacity">
+          className="px-6 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold hover:opacity-90 transition-opacity cursor-pointer">
           Try again
         </button>
         <Link href="/"

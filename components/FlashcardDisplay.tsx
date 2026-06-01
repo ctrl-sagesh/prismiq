@@ -53,7 +53,7 @@ export default function FlashcardDisplay({ result }: { result: string }) {
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-green-400 font-medium">{knownCount} known</span>
-          <button onClick={reset} className="text-xs text-white/30 hover:text-white/50 transition-colors">Reset</button>
+          <button onClick={reset} className="text-xs text-white/30 hover:text-white/50 transition-colors cursor-pointer">Reset</button>
         </div>
       </div>
 
@@ -90,17 +90,17 @@ export default function FlashcardDisplay({ result }: { result: string }) {
       {/* Controls */}
       <div className="flex gap-2 mb-3">
         <button onClick={() => go(-1)}
-          className="flex-1 py-2.5 rounded-xl border border-white/10 bg-white/[0.04] text-white/50 text-sm hover:bg-white/[0.08] transition-all">
+          className="flex-1 py-2.5 rounded-xl border border-white/10 bg-white/[0.04] text-white/50 text-sm hover:bg-white/[0.08] transition-all cursor-pointer">
           ← Prev
         </button>
         {flipped && !known.has(index) && (
           <button onClick={markKnown}
-            className="flex-1 py-2.5 rounded-xl bg-green-500/20 border border-green-500/30 text-green-300 text-sm font-medium hover:bg-green-500/30 transition-all">
+            className="flex-1 py-2.5 rounded-xl bg-green-500/20 border border-green-500/30 text-green-300 text-sm font-medium hover:bg-green-500/30 transition-all cursor-pointer">
             ✓ I know this
           </button>
         )}
         <button onClick={() => go(1)}
-          className="flex-1 py-2.5 rounded-xl border border-white/10 bg-white/[0.04] text-white/50 text-sm hover:bg-white/[0.08] transition-all">
+          className="flex-1 py-2.5 rounded-xl border border-white/10 bg-white/[0.04] text-white/50 text-sm hover:bg-white/[0.08] transition-all cursor-pointer">
           Next →
         </button>
       </div>
@@ -109,14 +109,14 @@ export default function FlashcardDisplay({ result }: { result: string }) {
       <div className="flex justify-center gap-1.5 flex-wrap">
         {cards.map((_, i) => (
           <button key={i} onClick={() => { setIndex(i); setFlipped(false); }}
-            className={`w-2 h-2 rounded-full transition-all ${i === index ? "bg-violet-400 w-4" : known.has(i) ? "bg-green-500/60" : "bg-white/15"}`} />
+            className={`w-2 h-2 rounded-full transition-all cursor-pointer ${i === index ? "bg-violet-400 w-4" : known.has(i) ? "bg-green-500/60" : "bg-white/15"}`} />
         ))}
       </div>
 
       {knownCount === cards.length && (
         <div className="mt-4 text-center p-4 rounded-xl bg-green-500/10 border border-green-500/20">
           <p className="text-green-300 font-semibold text-sm">You know all {cards.length} cards!</p>
-          <button onClick={reset} className="text-xs text-white/40 hover:text-white/60 mt-1 transition-colors">Start over</button>
+          <button onClick={reset} className="text-xs text-white/40 hover:text-white/60 mt-1 transition-colors cursor-pointer">Start over</button>
         </div>
       )}
     </div>

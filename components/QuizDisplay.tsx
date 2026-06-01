@@ -76,7 +76,7 @@ export default function QuizDisplay({ result }: { result: string }) {
         </div>
 
         <button onClick={restart}
-          className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-pink-600 text-white text-sm font-semibold hover:opacity-90 transition-opacity">
+          className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-pink-600 text-white text-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer">
           Try Again
         </button>
       </div>
@@ -139,7 +139,7 @@ export default function QuizDisplay({ result }: { result: string }) {
 
       {selected && (
         <button onClick={next}
-          className="w-full py-3 rounded-xl bg-gradient-to-r from-violet-600 to-pink-600 text-white text-sm font-semibold hover:opacity-90 transition-opacity">
+          className="w-full py-3 rounded-xl bg-gradient-to-r from-violet-600 to-pink-600 text-white text-sm font-semibold hover:opacity-90 transition-opacity cursor-pointer">
           {current + 1 >= questions.length ? "See Results" : "Next Question →"}
         </button>
       )}

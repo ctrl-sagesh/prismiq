@@ -61,7 +61,7 @@ export default function PaywallModal({
 
           <button
             onClick={() => signIn("google", { callbackUrl: "/" })}
-            className="w-full flex items-center justify-center gap-3 py-3 rounded-xl bg-white text-gray-800 font-semibold text-sm hover:bg-gray-100 transition-colors mb-3"
+            className="w-full flex items-center justify-center gap-3 py-3 rounded-xl bg-white text-gray-800 font-semibold text-sm hover:bg-gray-100 transition-colors mb-3 cursor-pointer"
           >
             <svg width="18" height="18" viewBox="0 0 18 18">
               <path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/>
@@ -72,7 +72,7 @@ export default function PaywallModal({
             Continue with Google
           </button>
 
-          <button onClick={onClose} className="text-xs text-white/30 hover:text-white/50 transition-colors">
+          <button onClick={onClose} className="text-xs text-white/30 hover:text-white/50 transition-colors cursor-pointer">
             Maybe later
           </button>
         </div>
@@ -144,7 +144,7 @@ export default function PaywallModal({
           <a href="/upgrade" className="text-xs text-violet-400/60 hover:text-violet-400 transition-colors">
             See full plan details →
           </a>
-          <button onClick={onClose} className="text-xs text-white/30 hover:text-white/50 transition-colors">
+          <button onClick={onClose} className="text-xs text-white/30 hover:text-white/50 transition-colors cursor-pointer">
             Maybe later
           </button>
         </div>

@@ -35,12 +35,12 @@ export default function Navbar() {
               )}
               <span className="text-sm text-white/70 hidden sm:block">{session.user.name?.split(" ")[0]}</span>
             </Link>
-            <button onClick={() => signOut()} className="text-xs text-white/40 hover:text-white/60 transition-colors">
+            <button onClick={() => signOut()} className="text-xs text-white/40 hover:text-white/60 transition-colors cursor-pointer">
               Sign out
             </button>
           </div>
         ) : (
-          <button onClick={() => signIn("google")} className="text-sm text-white/60 hover:text-white transition-colors">
+          <button onClick={() => signIn("google")} className="text-sm text-white/60 hover:text-white transition-colors cursor-pointer">
             Sign in
           </button>
         )}

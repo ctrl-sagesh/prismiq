@@ -267,7 +267,7 @@ export default function UpgradePage() {
               <div key={i} className="rounded-xl border border-white/10 bg-white/[0.03] overflow-hidden">
                 <button
                   onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  className="w-full flex items-center justify-between px-5 py-4 text-left"
+                  className="w-full flex items-center justify-between px-5 py-4 text-left cursor-pointer"
                 >
                   <span className="text-white/80 text-sm font-medium">{faq.q}</span>
                   <span className={`text-white/30 text-lg transition-transform duration-200 ${openFaq === i ? "rotate-45" : ""}`}>+</span>

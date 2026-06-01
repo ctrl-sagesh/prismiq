@@ -275,7 +275,7 @@ export default function Home() {
           <div className="flex gap-2 mb-5 p-1 rounded-xl bg-white/5 border border-white/10">
             {(["url", "file"] as InputType[]).map((t) => (
               <button key={t} onClick={() => { setInputType(t); resetForNewInput(); setFile(null); setUrl(""); }}
-                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${inputType === t ? "bg-violet-600 text-white shadow" : "text-white/50 hover:text-white"}`}>
+                className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all cursor-pointer ${inputType === t ? "bg-violet-600 text-white shadow" : "text-white/50 hover:text-white"}`}>
                 {t === "url" ? "🔗  Link or YouTube" : "📁  File or Image"}
               </button>
             ))}
@@ -297,7 +297,7 @@ export default function Home() {
                     { label: "Wikipedia: AI", url: "https://en.wikipedia.org/wiki/Artificial_intelligence" },
                   ].map((ex) => (
                     <button key={ex.label} onClick={() => setUrl(ex.url)}
-                      className="text-[11px] text-violet-400/70 hover:text-violet-300 border border-violet-500/20 hover:border-violet-500/40 px-2 py-0.5 rounded-full transition-all">
+                      className="text-[11px] text-violet-400/70 hover:text-violet-300 border border-violet-500/20 hover:border-violet-500/40 px-2 py-0.5 rounded-full transition-all cursor-pointer">
                       {ex.label}
                     </button>
                   ))}
@@ -334,7 +334,7 @@ export default function Home() {
             <div className="grid grid-cols-4 gap-2">
               {analyzeActions.map((a) => (
                 <button key={a.id} onClick={() => setAction(a.id)}
-                  className={`flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl border text-xs transition-all ${action === a.id ? "border-violet-500/60 bg-violet-500/15 text-violet-300" : "border-white/10 bg-white/[0.03] text-white/40 hover:text-white/70 hover:border-white/20"}`}>
+                  className={`flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl border text-xs transition-all cursor-pointer ${action === a.id ? "border-violet-500/60 bg-violet-500/15 text-violet-300" : "border-white/10 bg-white/[0.03] text-white/40 hover:text-white/70 hover:border-white/20"}`}>
                   <span className="text-xl">{a.icon}</span>
                   <span className="font-medium">{a.label}</span>
                 </button>
@@ -348,7 +348,7 @@ export default function Home() {
             <div className="grid grid-cols-3 gap-2">
               {studyActions.map((a) => (
                 <button key={a.id} onClick={() => setAction(a.id)}
-                  className={`flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl border text-xs transition-all ${action === a.id ? "border-pink-500/60 bg-pink-500/15 text-pink-300" : "border-white/10 bg-white/[0.03] text-white/40 hover:text-white/70 hover:border-white/20"}`}>
+                  className={`flex flex-col items-center gap-1.5 py-3 px-2 rounded-xl border text-xs transition-all cursor-pointer ${action === a.id ? "border-pink-500/60 bg-pink-500/15 text-pink-300" : "border-white/10 bg-white/[0.03] text-white/40 hover:text-white/70 hover:border-white/20"}`}>
                   <span className="text-xl">{a.icon}</span>
                   <span className="font-medium">{a.label}</span>
                 </button>
@@ -361,7 +361,7 @@ export default function Home() {
             <div className="flex gap-2 mt-3">
               {(["brief", "detailed"] as SummarizeMode[]).map((mode) => (
                 <button key={mode} onClick={() => setSummarizeMode(mode)}
-                  className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all border ${summarizeMode === mode ? "border-violet-500/60 bg-violet-500/15 text-violet-300" : "border-white/10 bg-white/[0.03] text-white/40 hover:text-white/60"}`}>
+                  className={`flex-1 py-2 rounded-lg text-xs font-medium transition-all border cursor-pointer ${summarizeMode === mode ? "border-violet-500/60 bg-violet-500/15 text-violet-300" : "border-white/10 bg-white/[0.03] text-white/40 hover:text-white/60"}`}>
                   {mode === "brief" ? "⚡ Quick overview" : "📖 Full breakdown"}
                 </button>
               ))}
@@ -385,7 +385,7 @@ export default function Home() {
 
           {/* Submit */}
           <button onClick={handleSubmit} disabled={loading}
-            className="mt-5 w-full py-3.5 rounded-xl bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold text-sm hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-lg">
+            className="mt-5 w-full py-3.5 rounded-xl bg-gradient-to-r from-violet-600 to-pink-600 text-white font-semibold text-sm hover:opacity-90 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 shadow-lg">
             {loading ? (
               <><span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />Analyzing content...</>
             ) : (
@@ -602,7 +602,7 @@ export default function Home() {
                   <button
                     onClick={handleChat}
                     disabled={chatLoading || !chatInput.trim()}
-                    className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-pink-600 text-white text-sm font-semibold hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-all shrink-0">
+                    className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-violet-600 to-pink-600 text-white text-sm font-semibold hover:opacity-90 disabled:opacity-40 cursor-pointer disabled:cursor-not-allowed transition-all shrink-0">
                     Ask
                   </button>
                 </div>

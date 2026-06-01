@@ -25,7 +25,7 @@ export default function CookieBanner() {
           <Link href="/privacy" className="text-violet-400 hover:underline">Learn more</Link>.
         </p>
         <button onClick={dismiss}
-          className="shrink-0 px-4 py-1.5 rounded-lg bg-violet-600 text-white text-xs font-semibold hover:bg-violet-500 transition-colors">
+          className="shrink-0 px-4 py-1.5 rounded-lg bg-violet-600 text-white text-xs font-semibold hover:bg-violet-500 transition-colors cursor-pointer">
           Got it
         </button>
       </div>
